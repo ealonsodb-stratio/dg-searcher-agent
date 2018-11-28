@@ -4,11 +4,10 @@ import java.sql.Timestamp
 import java.util.concurrent.Semaphore
 
 import akka.actor.{Actor, ActorRef, Cancellable}
-import com.stratio.governance.agent.searcher.SearcherActorSystem
-import com.stratio.governance.agent.searcher.actors.extractor.ExtractorParams
+import com.stratio.governance.agent.searcher.actors.SearcherActorSystem
 import com.stratio.governance.agent.searcher.actors.indexer.dao.{SearcherDao, SourceDao}
 import com.stratio.governance.agent.searcher.actors.indexer.{DGIndexer, IndexerParams}
-import com.stratio.governance.agent.searcher.model.{BusinessTerm, KeyValuePair ,EntityRow}
+import com.stratio.governance.agent.searcher.model.{BusinessTerm, EntityRow, KeyValuePair}
 import com.stratio.governance.commons.agent.domain.dao.DataAssetDao
 import org.scalatest.FlatSpec
 import org.slf4j.{Logger, LoggerFactory}
@@ -144,7 +143,7 @@ class DGIndexerTestTest extends FlatSpec {
     eParams.getSemaphore().acquire()
 
     val actorSystem: SearcherActorSystem[SASTExtractor, DGIndexer] = new SearcherActorSystem[SASTExtractor, DGIndexer]("test", classOf[SASTExtractor], classOf[DGIndexer], eParams, piParams)
-    actorSystem.initialize()
+    actorSystem.initPartialIndexation()
 
     eParams.getSemaphore().acquire()
     eParams.getSemaphore().release()

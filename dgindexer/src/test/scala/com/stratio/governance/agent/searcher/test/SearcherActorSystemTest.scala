@@ -3,17 +3,18 @@ package com.stratio.governance.agent.searcher.test
 import java.util.concurrent.Semaphore
 
 import akka.actor.{Actor, ActorRef, Cancellable}
-import com.stratio.governance.agent.searcher.SearcherActorSystem
-import com.stratio.governance.agent.searcher.actors.extractor.ExtractorParams
+
+import com.stratio.governance.agent.searcher.actors.SearcherActorSystem
+import com.stratio.governance.agent.searcher.actors.extractor.DGExtractorParams
 import com.stratio.governance.agent.searcher.actors.indexer.dao.{SearcherDao, SourceDao}
-import com.stratio.governance.agent.searcher.actors.indexer.{IndexerParams}
+import com.stratio.governance.agent.searcher.actors.indexer.IndexerParams
 import org.scalatest.FlatSpec
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class CommonParams(s: Semaphore, reference: String) extends ExtractorParams with IndexerParams {
+class CommonParams(s: Semaphore, reference: String) extends DGExtractorParams with IndexerParams {
 
   var r: String = null
 
@@ -89,7 +90,7 @@ class SearcherActorSystemTest extends FlatSpec {
     eParams.getSemaphore().acquire()
 
     val actorSystem: SearcherActorSystem[SimpleExtractor, SimpleIndexer] = new SearcherActorSystem[SimpleExtractor, SimpleIndexer]("test", classOf[SimpleExtractor], classOf[SimpleIndexer], eParams, eParams)
-    actorSystem.initialize()
+    actorSystem.initPartialIndexation()
 
     eParams.getSemaphore().acquire()
     eParams.getSemaphore().release()
