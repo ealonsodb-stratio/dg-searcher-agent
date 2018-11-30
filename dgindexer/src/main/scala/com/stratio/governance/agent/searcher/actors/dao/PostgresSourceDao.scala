@@ -81,6 +81,7 @@ class PostgresSourceDao(sourceConnectionUrl: String, sourceConnectionUser: Strin
     case Some(_) =>
       insertIntoLastIngestedInstantStatement.setTimestamp(0, Timestamp.from(instant.get))
       insertIntoLastIngestedInstantStatement.executeUpdate()
+    case None =>
   }
 
 
