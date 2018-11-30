@@ -1,29 +1,47 @@
-package com.stratio.governance.agent.searcher.test
+package com.stratio.governance.agent.searcher.actors
 
+import java.time.Instant
 import java.util.concurrent.Semaphore
 
 import akka.actor.{Actor, ActorRef, Cancellable}
-
-import com.stratio.governance.agent.searcher.actors.SearcherActorSystem
-import com.stratio.governance.agent.searcher.actors.extractor.DGExtractorParams
-import com.stratio.governance.agent.searcher.actors.indexer.dao.{SearcherDao, SourceDao}
+import com.stratio.governance.agent.searcher.actors.dao.SourceDao
+import com.stratio.governance.agent.searcher.actors.extractor.{DGExtractorParams, SchedulerMode}
 import com.stratio.governance.agent.searcher.actors.indexer.IndexerParams
+import com.stratio.governance.agent.searcher.actors.indexer.dao.SearcherDao
+import com.stratio.governance.agent.searcher.model._
+import com.stratio.governance.commons.agent.domain.dao.DataAssetDao
 import org.scalatest.FlatSpec
 import org.slf4j.{Logger, LoggerFactory}
 
-import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
 
-class CommonParams(s: Semaphore, reference: String) extends DGExtractorParams with IndexerParams {
+class CustomSourceDao extends SourceDao {
+  override def preStart(): Unit = ???
 
-  var r: String = null
+  override def postStop(): Unit = ???
+
+  override def keyValuePairProcess(ids: Array[Int]): List[EntityRow] = ???
+
+  override def businessTerms(ids: Array[Int]): List[EntityRow] = ???
+
+  override def readDataAssetsSince(instant: Option[Instant], limit: Int): (Array[DataAssetDao], Option[Instant]) = ???
+
+  override def readLastIngestedInstant(): Option[Instant] = ???
+
+  override def writeLastIngestedInstant(instant: Option[Instant]): Unit = ???
+}
+
+class CommonParams(s: Semaphore, sourceDao: SourceDao, reference: String) extends DGExtractorParams(sourceDao, 10,10, SchedulerMode.Periodic, 10, 10,10) with IndexerParams {
+
+  var r: String =""
 
   def getSemaphore(): Semaphore = {
-    return s
+    s
   }
 
   def getReference(): String = {
-    return reference
+    reference
   }
 
   def setResult(result: String): Unit = {
@@ -31,16 +49,16 @@ class CommonParams(s: Semaphore, reference: String) extends DGExtractorParams wi
   }
 
   def getResult(): String = {
-    return r
+    r
   }
 
   override def getSourceDao(): SourceDao = ???
   override def getSearcherDao(): SearcherDao = ???
 
-  override def getPartiton(): Int = ???
+  override def getPartition(): Int = ???
 }
 
-case class MetaInfo(value: String);
+case class MetaInfo(value: String)
 
 class SimpleExtractor(indexer: ActorRef, params: CommonParams) extends Actor {
 
@@ -61,7 +79,6 @@ class SimpleExtractor(indexer: ActorRef, params: CommonParams) extends Actor {
     }
     case _       => LOG.info("Extractor default handle. Nothing to do.")
   }
-
 }
 
 class SimpleIndexer(params: CommonParams) extends Actor {
@@ -85,7 +102,8 @@ class SearcherActorSystemTest extends FlatSpec {
 
     val s: Semaphore = new Semaphore(1)
     val reference: String = "testing"
-    val eParams: CommonParams = new CommonParams(s, reference)
+    val sourceDao: SourceDao = new CustomSourceDao()
+    val eParams: CommonParams = new CommonParams(s, sourceDao, reference)
 
     eParams.getSemaphore().acquire()
 
@@ -98,5 +116,4 @@ class SearcherActorSystemTest extends FlatSpec {
     assert(eParams.getResult().equals(reference), "result '" + eParams.getResult() + "' is not '" + reference + "'")
 
   }
-
 }

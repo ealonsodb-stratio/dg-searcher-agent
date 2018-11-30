@@ -1,12 +1,14 @@
-package com.stratio.governance.agent.searcher.test
+package com.stratio.governance.agent.searcher.actors.indexer
 
 import java.sql.Timestamp
+import java.time.Instant
 import java.util.concurrent.Semaphore
 
 import akka.actor.{Actor, ActorRef, Cancellable}
 import com.stratio.governance.agent.searcher.actors.SearcherActorSystem
-import com.stratio.governance.agent.searcher.actors.indexer.dao.{SearcherDao, SourceDao}
-import com.stratio.governance.agent.searcher.actors.indexer.{DGIndexer, IndexerParams}
+import com.stratio.governance.agent.searcher.actors.dao.SourceDao
+import com.stratio.governance.agent.searcher.actors.extractor.{DGExtractorParams, SchedulerMode}
+import com.stratio.governance.agent.searcher.actors.indexer.dao.SearcherDao
 import com.stratio.governance.agent.searcher.model.{BusinessTerm, EntityRow, KeyValuePair}
 import com.stratio.governance.commons.agent.domain.dao.DataAssetDao
 import org.scalatest.FlatSpec
@@ -15,49 +17,59 @@ import org.slf4j.{Logger, LoggerFactory}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
-class ExtractorTestParams(s: Semaphore, chunk: Array[DataAssetDao]) extends ExtractorParams {
+class ExtractorTestParams(s: Semaphore, sourceDao: SourceDao, chunk: Array[DataAssetDao]) extends DGExtractorParams(sourceDao, 10,10, SchedulerMode.Periodic, 10, 10,10) {
 
   def getSemaphore(): Semaphore = {
-    return s
+    s
   }
 
   def getChunk(): Array[DataAssetDao] = {
-    return chunk
+    chunk
   }
 
 }
+class CustomTestSourceDao(noAdds: Boolean) extends SourceDao {
+  override def keyValuePairProcess(ids: Array[Int]): List[EntityRow] = {
+    if (!noAdds) {
+      val rows: List[List[EntityRow]] = ids.map(i => List(KeyValuePair(i, "OWNER", "finantial", "2018-11-29T10:27:00.000"), KeyValuePair(i, "QUALITY", "High", "2018-09-28T20:45:00.000"))).toList
+      rows.fold[List[EntityRow]](List())((a: List[EntityRow], b: List[EntityRow]) => {
+        a ++ b
+      }).filter(a => a.getId() != 1)
+    } else {
+      List[EntityRow]()
+    }
+  }
 
+  override def businessTerms(ids: Array[Int]): List[EntityRow] = {
+    if (!noAdds) {
+      val rows: List[List[EntityRow]] = ids.map(i => List(BusinessTerm(i, "RGDP", "2018-09-28T20:45:00.000"), BusinessTerm(i, "FINANTIAL", "2018-09-28T20:45:00.000"))).toList
+      rows.fold[List[EntityRow]](List())((a: List[EntityRow], b: List[EntityRow]) => {
+        a ++ b
+      }).filter(a => a.getId() != 1)
+    } else {
+      List[EntityRow]()
+    }
+  }
+
+  override def preStart(): Unit = ???
+
+  override def postStop(): Unit = ???
+
+  override def readDataAssetsSince(instant: Option[Instant], limit: Int): (Array[DataAssetDao], Option[Instant]) = ???
+
+  override def readLastIngestedInstant(): Option[Instant] = ???
+
+  override def writeLastIngestedInstant(instant: Option[Instant]): Unit = ???
+}
 class PartialIndexerTestParams(s: Semaphore, noAdds: Boolean) extends IndexerParams {
 
-  var result: String = null
+  var result: String
 
   def getSemaphore(): Semaphore = {
-    return s
+    s
   }
 
-  override def getSourceDao(): SourceDao = new SourceDao {
-    override def keyValuePairProcess(ids: Array[Int]): List[EntityRow] = {
-      if (!noAdds) {
-        val rows: List[List[EntityRow]] = ids.map(i => List(new KeyValuePair(i, "OWNER", "finantial", "2018-11-29T10:27:00.000"), new KeyValuePair(i, "QUALITY", "High", "2018-09-28T20:45:00.000"))).toList
-        rows.fold[List[EntityRow]](List())((a: List[EntityRow], b: List[EntityRow]) => {
-          a ++ b
-        }).filter(a => a.getId() != 1)
-      } else {
-        List[EntityRow]()
-      }
-    }
-
-    override def businessTerms(ids: Array[Int]): List[EntityRow] = {
-      if (!noAdds) {
-        val rows: List[List[EntityRow]] = ids.map(i => List(new BusinessTerm(i, "RGDP", "2018-09-28T20:45:00.000"), new BusinessTerm(i, "FINANTIAL", "2018-09-28T20:45:00.000"))).toList
-        rows.fold[List[EntityRow]](List())((a: List[EntityRow], b: List[EntityRow]) => {
-          a ++ b
-        }).filter(a => a.getId() != 1)
-      } else {
-        List[EntityRow]()
-      }
-    }
-  }
+  override def getSourceDao(): SourceDao = new CustomTestSourceDao(noAdds)
 
   override def getSearcherDao(): SearcherDao = new SearcherDao {
     override def index(doc: String): Unit = {
@@ -67,12 +79,14 @@ class PartialIndexerTestParams(s: Semaphore, noAdds: Boolean) extends IndexerPar
   }
 
   def getResult(): String = {
-    return result
+    result
   }
 
-  override def getPartiton(): Int = {
-    return 2
+  override def getPartition(): Int = {
+    2
   }
+
+
 }
 
 class SASTExtractor(indexer: ActorRef, params: ExtractorTestParams) extends Actor {
@@ -83,7 +97,7 @@ class SASTExtractor(indexer: ActorRef, params: ExtractorTestParams) extends Acto
 
   val notification_cancellable: Cancellable = context.system.scheduler.scheduleOnce(1 millis, self, NOTIFICATION)
 
-  override def receive = {
+  override def receive: PartialFunction[Any, Unit] = {
     case NOTIFICATION => {
       println("Notification received")
       indexer ! DGIndexer.IndexerEvent(params.getChunk())
@@ -137,7 +151,8 @@ class DGIndexerTestTest extends FlatSpec {
   def process(chunk: Array[DataAssetDao], noAdds: Boolean): String = {
     val s: Semaphore = new Semaphore(1)
     //
-    val eParams: ExtractorTestParams = new ExtractorTestParams(s, chunk)
+    val sourceDao: SourceDao = new CustomTestSourceDao(noAdds)
+    val eParams: ExtractorTestParams = new ExtractorTestParams(s, sourceDao, chunk)
     val piParams: PartialIndexerTestParams = new PartialIndexerTestParams(s, noAdds)
 
     eParams.getSemaphore().acquire()

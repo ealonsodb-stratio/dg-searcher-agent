@@ -27,6 +27,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <scala.binary.version>2.11</scala.binary.version>
+        <scala.mock.version>4.1.0</scala.mock.version>
         <scala.version>${scala.binary.version}.12</scala.version>
         <scalatest.version>3.0.5</scalatest.version>
         <scalikejdbc>2.2.8</scalikejdbc>
