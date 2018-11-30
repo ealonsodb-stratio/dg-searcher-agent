@@ -131,7 +131,7 @@ class DGExtractorTest extends FlatSpec {
     val schedulerMode: SchedulerMode = SchedulerMode.Continuous
     val pauseMs: Long = 2
     val maxErrorRetry: Int= 5
-    val delayMs: Long = 10
+    val delayMs: Long = 1000
     val eParams: DGExtractorParams = new DGExtractorParams(sourceDao, limit, periodMs, schedulerMode, pauseMs, maxErrorRetry, delayMs)
     val piParams: CustomDGIndexerParams = new CustomDGIndexerParams(sourceDao, searcherDao, limit, s)
 
