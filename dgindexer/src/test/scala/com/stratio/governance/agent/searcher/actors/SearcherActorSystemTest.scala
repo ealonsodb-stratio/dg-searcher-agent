@@ -5,7 +5,7 @@ import java.util.concurrent.Semaphore
 
 import akka.actor.{Actor, ActorRef, Cancellable}
 import com.stratio.governance.agent.searcher.actors.dao.SourceDao
-import com.stratio.governance.agent.searcher.actors.extractor.{DGExtractorParams, SchedulerMode}
+import com.stratio.governance.agent.searcher.actors.extractor.DGExtractorParams
 import com.stratio.governance.agent.searcher.actors.indexer.IndexerParams
 import com.stratio.governance.agent.searcher.actors.indexer.dao.SearcherDao
 import com.stratio.governance.agent.searcher.model._
@@ -31,7 +31,7 @@ class CustomSourceDao extends SourceDao {
   override def writeLastIngestedInstant(instant: Option[Instant]): Unit = ???
 }
 
-class CommonParams(s: Semaphore, sourceDao: SourceDao, reference: String) extends DGExtractorParams(sourceDao, 10,10, SchedulerMode.Continuous, 10, 10,10) with IndexerParams {
+class CommonParams(s: Semaphore, sourceDao: SourceDao, reference: String) extends DGExtractorParams(sourceDao, 10,10, 10, 10,10) with IndexerParams {
 
   var r: String =""
 

@@ -1,7 +1,5 @@
 package com.stratio.governance.agent.searcher.main
 
-import com.stratio.governance.agent.searcher.actors.extractor.SchedulerMode
-import com.stratio.governance.agent.searcher.actors.extractor.SchedulerMode.SchedulerMode
 import com.typesafe.config.ConfigFactory
 
 object AppConf {
@@ -34,7 +32,7 @@ object AppConf {
 
   lazy val extractorPeriodMs: Long = envOrElseConfigOrElseDefault("extractor.period.ms", 10000)
 
-  lazy val extractorSchedulerMode: SchedulerMode = SchedulerMode.valueOf(envOrElseConfig("extractor.scheduler.mode")).getOrElse[SchedulerMode](SchedulerMode.Periodic)
+  //lazy val extractorSchedulerMode: SchedulerMode = SchedulerMode.valueOf(envOrElseConfig("extractor.scheduler.mode")).getOrElse[SchedulerMode](SchedulerMode.Periodic)
 
   lazy val extractorExponentialbackoffPauseMs: Long = envOrElseConfigOrElseDefault("extractor.exponentialbackoff.pause.ms", 1000)
 

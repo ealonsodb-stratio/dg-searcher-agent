@@ -32,13 +32,6 @@ class DGExtractor(indexer: ActorRef, params: DGExtractorParams) extends Actor {
   implicit val timeout: Timeout = Timeout(60000, MILLISECONDS)
   implicit val formats: DefaultFormats.type = DefaultFormats
 
-  // execution context for the notifications
-  //context.dispatcher
-
-
-
-  //implicit val formats = DefaultFormats
-
   override def preStart(): Unit = {
     context.watch(self)
   }

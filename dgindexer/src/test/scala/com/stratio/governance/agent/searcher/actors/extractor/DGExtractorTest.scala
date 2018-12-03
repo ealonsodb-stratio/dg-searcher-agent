@@ -7,7 +7,6 @@ import java.util.concurrent.Semaphore
 import akka.actor.Actor
 import com.stratio.governance.agent.searcher.actors.SearcherActorSystem
 import com.stratio.governance.agent.searcher.actors.dao.SourceDao
-import com.stratio.governance.agent.searcher.actors.extractor.SchedulerMode.SchedulerMode
 import com.stratio.governance.agent.searcher.actors.indexer.DGIndexer.IndexerEvent
 import com.stratio.governance.agent.searcher.actors.indexer._
 import com.stratio.governance.agent.searcher.actors.indexer.dao.{CustomSearcherDao, SearcherDao}
@@ -117,11 +116,10 @@ class DGExtractorTest extends FlatSpec {
 
     val limit: Int = 2
     val periodMs : Long =1000
-    val schedulerMode: SchedulerMode = SchedulerMode.Continuous
     val pauseMs: Long = 2
     val maxErrorRetry: Int= 5
     val delayMs: Long = 1000
-    val eParams: DGExtractorParams = new DGExtractorParams(sourceDao, limit, periodMs, schedulerMode, pauseMs, maxErrorRetry, delayMs)
+    val eParams: DGExtractorParams = new DGExtractorParams(sourceDao, limit, periodMs, pauseMs, maxErrorRetry, delayMs)
     val piParams: CustomDGIndexerParams = new CustomDGIndexerParams(sourceDao, searcherDao, limit, s)
 
     s.acquire()

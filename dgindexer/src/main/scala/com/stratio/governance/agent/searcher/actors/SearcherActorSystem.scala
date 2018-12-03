@@ -1,10 +1,8 @@
 package com.stratio.governance.agent.searcher.actors
 
-import java.util.concurrent.atomic.AtomicInteger
-
-import akka.actor.{Actor, ActorRef, ActorSystem, DeadLetter, Props}
+import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import com.stratio.governance.agent.searcher.actors.extractor.DGExtractor.{PartialIndexationMessage, TotalIndexationMessage}
-import com.stratio.governance.agent.searcher.actors.extractor.{DGExtractorParams, SchedulerMode}
+import com.stratio.governance.agent.searcher.actors.extractor.DGExtractorParams
 import com.stratio.governance.agent.searcher.actors.indexer.IndexerParams
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -22,11 +20,7 @@ class SearcherActorSystem[A <: Actor,B <: Actor](name: String, extractor: Class[
   }
 
   def initPartialIndexation(): Unit = {
-    if (extractorParams.schedulerMode == SchedulerMode.Periodic) {
-      system.scheduler.schedule(extractorParams.delayMs millis, extractorParams.periodMs millis, extractorRef, PartialIndexationMessage(None, extractorParams.limit, extractorParams.createExponentialBackOff))
-    } else {
-      system.scheduler.scheduleOnce(extractorParams.delayMs millis, extractorRef, PartialIndexationMessage(None, extractorParams.limit, extractorParams.createExponentialBackOff))
-    }
+    system.scheduler.scheduleOnce(extractorParams.delayMs millis, extractorRef, PartialIndexationMessage(None, extractorParams.limit, extractorParams.createExponentialBackOff))
   }
 
   def stopAll() : Unit = {
