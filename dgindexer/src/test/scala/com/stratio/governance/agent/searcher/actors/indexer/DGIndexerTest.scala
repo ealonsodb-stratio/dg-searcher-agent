@@ -58,6 +58,7 @@ class CustomTestSourceDao(noAdds: Boolean) extends SourceDao {
   override def readLastIngestedInstant(): Option[Instant] = ???
 
   override def writeLastIngestedInstant(instant: Option[Instant]): Unit = ???
+
 }
 
 class PartialIndexerTestParams(s: Semaphore, noAdds: Boolean) extends IndexerParams {
@@ -100,7 +101,7 @@ class SASTExtractor(indexer: ActorRef, params: ExtractorTestParams) extends Acto
       indexer ! DGIndexer.IndexerEvent(params.getChunk())
     }
 
-    case _       => LOG.info("Extractor default handle. Nothing to do.")
+    case _ => LOG.info("Extractor default handle. Nothing to do.")
   }
 
 }

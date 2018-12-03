@@ -32,7 +32,7 @@ class CustomSourceDao extends SourceDao {
   override def writeLastIngestedInstant(instant: Option[Instant]): Unit = ???
 }
 
-class CommonParams(s: Semaphore, sourceDao: SourceDao, reference: String) extends DGExtractorParams(sourceDao, 10,10, SchedulerMode.Periodic, 10, 10,10) with IndexerParams {
+class CommonParams(s: Semaphore, sourceDao: SourceDao, reference: String) extends DGExtractorParams(sourceDao, 10,10, SchedulerMode.Continuous, 10, 10,10) with IndexerParams {
 
   var r: String =""
 
