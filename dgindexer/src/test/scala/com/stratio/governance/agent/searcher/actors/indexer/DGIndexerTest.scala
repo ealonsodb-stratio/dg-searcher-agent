@@ -51,9 +51,7 @@ class CustomTestSourceDao(noAdds: Boolean) extends SourceDao {
     }
   }
 
-  override def preStart(): Unit = ???
-
-  override def postStop(): Unit = ???
+  override def close(): Unit = ???
 
   override def readDataAssetsSince(instant: Option[Instant], limit: Int): (Array[DataAssetDao], Option[Instant]) = ???
 
@@ -61,9 +59,10 @@ class CustomTestSourceDao(noAdds: Boolean) extends SourceDao {
 
   override def writeLastIngestedInstant(instant: Option[Instant]): Unit = ???
 }
+
 class PartialIndexerTestParams(s: Semaphore, noAdds: Boolean) extends IndexerParams {
 
-  var result: String
+  var result: String = ""
 
   def getSemaphore(): Semaphore = {
     s
@@ -85,8 +84,6 @@ class PartialIndexerTestParams(s: Semaphore, noAdds: Boolean) extends IndexerPar
   override def getPartition(): Int = {
     2
   }
-
-
 }
 
 class SASTExtractor(indexer: ActorRef, params: ExtractorTestParams) extends Actor {
@@ -108,7 +105,7 @@ class SASTExtractor(indexer: ActorRef, params: ExtractorTestParams) extends Acto
 
 }
 
-class DGIndexerTestTest extends FlatSpec {
+class DGIndexerTest extends FlatSpec {
 
   "Extractor Completed Events Simulation" should "be processed in Indexer Mock" in {
 
@@ -123,7 +120,7 @@ class DGIndexerTestTest extends FlatSpec {
       new DataAssetDao(6,Option("purchases"),Option("Purchases"),"MyDataStore://>FinantialDB/:toys-department:purchases:","SQL","FIELD","stratio","",true, new Timestamp(milis), new Timestamp(milis))
     )
 
-    val result = process(chunk, false)
+    val result = process(chunk, noAdds = false)
 
     assert(result.equals(reference), "result '" + result + "' is not '" + reference + "'")
 
@@ -142,7 +139,7 @@ class DGIndexerTestTest extends FlatSpec {
       new DataAssetDao(6,Option("purchases"),Option("Purchases"),"MyDataStore://>FinantialDB/:toys-department:purchases:","SQL","FIELD","stratio","",true, new Timestamp(milis), new Timestamp(milis))
     )
 
-    val result = process(chunk, true)
+    val result = process(chunk, noAdds = true)
 
     assert(result.equals(reference), "result '" + result + "' is not '" + reference + "'")
 
@@ -163,8 +160,7 @@ class DGIndexerTestTest extends FlatSpec {
     eParams.getSemaphore().acquire()
     eParams.getSemaphore().release()
 
-    return piParams.getResult()
-
+    actorSystem.stopAll()
+    piParams.getResult()
   }
-
 }

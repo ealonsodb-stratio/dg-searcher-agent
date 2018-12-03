@@ -15,6 +15,8 @@ import com.stratio.governance.agent.searcher.model._
 import com.stratio.governance.agent.searcher.model.es.EntityRowES
 import com.stratio.governance.commons.agent.domain.dao.DataAssetDao
 import org.scalatest.FlatSpec
+import org.scalatest.junit.JUnitRunner
+
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -88,6 +90,7 @@ class CustomDGIndexer(params: CustomDGIndexerParams) extends Actor {
   }
 }
 
+
 class DGExtractorTest extends FlatSpec {
 
   "Extractor Extracted Simulation Events" should "be processed in Indexer Mock" in {
@@ -143,6 +146,7 @@ class DGExtractorTest extends FlatSpec {
     s.acquire()
     s.release()
 
+    actorSystem.stopAll()
     piParams.returnList
   }
 }

@@ -113,6 +113,8 @@ class SearcherActorSystemTest extends FlatSpec {
     eParams.getSemaphore().acquire()
     eParams.getSemaphore().release()
 
+    Thread.sleep(1000)
+    actorSystem.stopAll()
     assert(eParams.getResult().equals(reference), "result '" + eParams.getResult() + "' is not '" + reference + "'")
 
   }
