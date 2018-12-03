@@ -12,11 +12,8 @@ import com.stratio.governance.agent.searcher.actors.indexer.DGIndexer.IndexerEve
 import com.stratio.governance.agent.searcher.actors.indexer._
 import com.stratio.governance.agent.searcher.actors.indexer.dao.{CustomSearcherDao, SearcherDao}
 import com.stratio.governance.agent.searcher.model._
-import com.stratio.governance.agent.searcher.model.es.EntityRowES
 import com.stratio.governance.commons.agent.domain.dao.DataAssetDao
 import org.scalatest.FlatSpec
-import org.scalatest.junit.JUnitRunner
-
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -25,18 +22,6 @@ import scala.concurrent.Future
 class CustomSourceDao(chunk: Array[DataAssetDao]) extends SourceDao {
   val chunkList: List[(Timestamp, DataAssetDao)] = chunk.toList.map(t => (t.modifiedAt, t)).sortBy(_._1.getTime)
   var lastInstant: Option[Instant] = None
-
-  override def keyValuePairProcess(keyValuePair: KeyValuePair): EntityRowES = ???
-
-  override def databaseSchemaProcess(databaseSchema: DatabaseSchema): EntityRowES = ???
-
-  override def fileTableProcess(fileTable: FileTable): EntityRowES = ???
-
-  override def fileColumnProcess(fileColumn: FileColumn): EntityRowES = ???
-
-  override def sqlTableProcess(sqlTable: SqlTable): EntityRowES = ???
-
-  override def sqlColumnProcess(sqlColumn: SqlColumn): EntityRowES = ???
 
   override def readDataAssetsSince(instant: Option[Instant], limit: Int): (Array[DataAssetDao], Option[Instant]) = {
     val returnElems = instant match {
@@ -57,9 +42,11 @@ class CustomSourceDao(chunk: Array[DataAssetDao]) extends SourceDao {
     lastInstant = instant
   }
 
-  override def preStart(): Unit = {}
+  override def close(): Unit = {}
 
-  override def postStop(): Unit = {}
+  override def keyValuePairProcess(ids: Array[Int]): List[EntityRow] = ???
+
+  override def businessTerms(ids: Array[Int]): List[EntityRow] = ???
 }
 
 class testCustomSearcherDao extends SearcherDao() {
@@ -79,14 +66,13 @@ class CustomDGIndexer(params: CustomDGIndexerParams) extends Actor {
   var list: ArrayBuffer[DataAssetDao]= ArrayBuffer()
 
   override def receive: Receive = {
-    case IndexerEvent(chunk: Array[DataAssetDao]) => {
+    case IndexerEvent(chunk: Array[DataAssetDao]) =>
       list ++= chunk
       if (chunk.length < params.limit) {
         params.semaphore.release()
         params.setReturnList(list.toList)
       }
       sender ! Future()
-    }
   }
 }
 

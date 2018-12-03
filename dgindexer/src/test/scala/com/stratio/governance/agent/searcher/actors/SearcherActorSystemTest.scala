@@ -17,9 +17,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
 class CustomSourceDao extends SourceDao {
-  override def preStart(): Unit = ???
 
-  override def postStop(): Unit = ???
+  override def close(): Unit = ???
 
   override def keyValuePairProcess(ids: Array[Int]): List[EntityRow] = ???
 

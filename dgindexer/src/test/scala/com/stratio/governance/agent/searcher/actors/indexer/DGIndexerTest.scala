@@ -17,7 +17,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
-class ExtractorTestParams(s: Semaphore, sourceDao: SourceDao, chunk: Array[DataAssetDao]) extends DGExtractorParams(sourceDao, 10,10, SchedulerMode.Periodic, 10, 10,10) {
+class ExtractorTestParams(s: Semaphore, sourceDao: SourceDao, chunk: Array[DataAssetDao]) extends DGExtractorParams(sourceDao, 10,10, SchedulerMode.Continuous, 10, 10,10) {
 
   def getSemaphore(): Semaphore = {
     s

@@ -39,32 +39,12 @@ class DGExtractor(indexer: ActorRef, params: DGExtractorParams) extends Actor {
 
   //implicit val formats = DefaultFormats
 
-  def setEOnErrorState(): Unit = {
-    LOG.error("Circuit breaker open")
-    context.become(error)
-  }
-
-  def backToNormalState(): Unit = {
-    LOG.debug("Circuit breaker half Open")
-    context.unbecome()
-  }
-
-  def backToClosedState(): Unit = {
-    LOG.debug("Circuit breaker Closed")
-    context.unbecome()
-  }
-
-
   override def preStart(): Unit = {
-    // make sure connection isn't closed when executing queries
-    // we setup the
-    params.sourceDao.preStart()
     context.watch(self)
   }
 
   override def postStop(): Unit = {
-    params.sourceDao.postStop()
-
+    params.sourceDao.close()
   }
 
   def receive: PartialFunction[Any, Unit] = {
@@ -95,7 +75,6 @@ class DGExtractor(indexer: ActorRef, params: DGExtractorParams) extends Actor {
             case None =>
           }
         case Failure(e) =>
-          //TODO manage errors
           println(s"Indexation failed")
           e.printStackTrace()
           Thread.sleep(exponentialBackOff.getPause)
