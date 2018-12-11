@@ -27,9 +27,9 @@ class DGManager(extractor: ActorRef, managerUtils: ManagerUtils, searcherDao: Se
   var totalIndexationPending: Boolean = false
 
   override def receive: Receive = {
-    case BOOT => {
+    case BOOT =>
       LOG.info("Initiating dg-searcher-agent ...")
-      val modelList: List[String] = searcherDao.getModels().filter(m => m.equals(DGManager.MODEL_NAME))
+      val modelList: List[String] = searcherDao.getModels.filter(m => m.equals(DGManager.MODEL_NAME))
 
       if (modelList.isEmpty) {
         self ! FIRST_TOTAL_INDEXATION
@@ -46,22 +46,19 @@ class DGManager(extractor: ActorRef, managerUtils: ManagerUtils, searcherDao: Se
         }
       }
 
-    }
-
-    case PARTIAL_INDEXATION => {
+    case PARTIAL_INDEXATION =>
       LOG.info("PARTIAL_INDEXATION INIT event received")
       val check: (Boolean, Option[String]) = searcherDao.checkTotalIndexation(DGManager.MODEL_NAME)
-      if (!active_partial_indexation && !check._1 ) {
+      if (!active_partial_indexation && !check._1) {
         launchPartialIndexation
       } else {
         LOG.warn("partial indexation can not be executed because there is another indexation (total or partial) on course")
       }
-    }
 
-    case FIRST_TOTAL_INDEXATION => {
+    case FIRST_TOTAL_INDEXATION =>
       LOG.debug("FIRST_TOTAL_INDEXATION INIT event received")
       try {
-        val model = managerUtils.getGeneratedModel()
+        val model: String = managerUtils.getGeneratedModel
         searcherDao.insertModel(DGManager.MODEL_NAME, model)
 
         launchTemporizations()
@@ -69,14 +66,11 @@ class DGManager(extractor: ActorRef, managerUtils: ManagerUtils, searcherDao: Se
         self ! TOTAL_INDEXATION
 
       } catch {
-        case e: Throwable => {
+        case e: Throwable =>
           LOG.error("Error while inserting first model. Timing not initiated", e)
-        }
       }
 
-    }
-
-    case TOTAL_INDEXATION => {
+    case TOTAL_INDEXATION =>
       LOG.info("TOTAL_INDEXATION INIT event received")
       if (active_partial_indexation) {
         totalIndexationPending = true
@@ -86,31 +80,28 @@ class DGManager(extractor: ActorRef, managerUtils: ManagerUtils, searcherDao: Se
 
           val token: String = searcherDao.initTotalIndexationProcess(DGManager.MODEL_NAME)
           try {
-            val model = managerUtils.getGeneratedModel()
+            val model: String = managerUtils.getGeneratedModel
             searcherDao.insertModel(DGManager.MODEL_NAME, model)
             launchTotalIndexation(token)
           } catch {
-            case e: Throwable => {
+            case e: Throwable =>
               LOG.error("Error while inserting model. token " + token, e)
               searcherDao.cancelTotalIndexationProcess(DGManager.MODEL_NAME, token)
-            }
           }
         } else {
           LOG.warn("total indexation can not be executed because there is another one on course (" + check._2.get + ")")
         }
       }
-    }
 
-    case DGManager.ManagerPartialIndexationEvent(status) => {
+    case DGManager.ManagerPartialIndexationEvent(status) =>
       LOG.info("PARTIAL_INDEXATION END event received")
       active_partial_indexation = false
       if (totalIndexationPending) {
         totalIndexationPending = false
         self ! TOTAL_INDEXATION
       }
-    }
 
-    case DGManager.ManagerTotalIndexationEvent(token, status) => {
+    case DGManager.ManagerTotalIndexationEvent(token, status) =>
       LOG.info("TOTAL_INDEXATION END event received")
       status match {
         case IndexationStatus.SUCCESS => {
@@ -122,13 +113,10 @@ class DGManager(extractor: ActorRef, managerUtils: ManagerUtils, searcherDao: Se
           LOG.debug("TOTAL_INDEXATION END. ERROR")
         }
       }
-    }
-
   }
 
-  private def getRandomToken(): String = {
-    randomUUID().toString
-  }
+  private def getRandomToken: String = randomUUID().toString
+
 
   private def launchTotalIndexation(token: String): Unit = {
     LOG.debug("Launching Total Indexation")
@@ -143,8 +131,8 @@ class DGManager(extractor: ActorRef, managerUtils: ManagerUtils, searcherDao: Se
   private def launchTemporizations(): Unit = {
     LOG.info("Initiating Partial/Total timing")
     // Timer initialization for both total and partial indexation
-    managerUtils.getScheduler().schedulePartialIndexation(self, PARTIAL_INDEXATION)
-    managerUtils.getScheduler().scheduleTotalIndexation(self,TOTAL_INDEXATION)
+    managerUtils.getScheduler.schedulePartialIndexation(self, PARTIAL_INDEXATION)
+    managerUtils.getScheduler.scheduleTotalIndexation(self,TOTAL_INDEXATION)
   }
 
 }

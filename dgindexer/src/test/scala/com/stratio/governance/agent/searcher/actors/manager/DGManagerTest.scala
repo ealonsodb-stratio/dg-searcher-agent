@@ -38,16 +38,16 @@ class ManagerUtilsTest(scheduler: DGScheduler, s: Semaphore, testNumber: Int) ex
 
   var modelGenerated: Boolean = false
 
-  def isModelGenerated(): Boolean = {
+  def isModelGenerated: Boolean = {
     modelGenerated
   }
 
-  override def getGeneratedModel(): String = {
+  override def getGeneratedModel: String = {
     modelGenerated = true
     "{}"
   }
 
-  override def getScheduler(): Scheduler = {
+  override def getScheduler: Scheduler = {
     scheduler
   }
 
@@ -60,27 +60,25 @@ class DGSearcherDaoMock(s: Semaphore, testNumber: Int) extends SearcherDao {
 
   var totalIndexationSteps: Int = 0
 
-  override def getModels(): List[String] = {
+  override def getModels: List[String] = {
     testNumber match {
-      case 2 => {
-        return List("Model1", "Model2")
-      }
-      case _ => {
-        return List(DGManager.MODEL_NAME, "Other")
-      }
+      case 2 =>
+        List("Model1", "Model2")
+      case _ =>
+        List(DGManager.MODEL_NAME, "Other")
     }
 
   }
 
-  def isChecked(): Boolean = {
-    return checked
+  def isChecked: Boolean = {
+    checked
   }
 
-  def getModelsJson(): Option[String] = {
-    return modelsJson
+  def getModelsJson: Option[String] = {
+    modelsJson
   }
 
-  def getTotalIndexationSteps(): Int = {
+  def getTotalIndexationSteps: Int = {
     totalIndexationSteps
   }
 
@@ -88,9 +86,8 @@ class DGSearcherDaoMock(s: Semaphore, testNumber: Int) extends SearcherDao {
     totalIndexationSteps += 1
     checked = true
     testNumber match {
-      case _ => {
-        return (false, None)
-      }
+      case _ =>
+        (false, None)
     }
   }
 
@@ -101,7 +98,7 @@ class DGSearcherDaoMock(s: Semaphore, testNumber: Int) extends SearcherDao {
 
   override def initTotalIndexationProcess(model: String): String = {
     totalIndexationSteps += 1
-    return "1234567890"
+    "1234567890"
   }
 
   override def finishTotalIndexationProcess(model: String, token: String): Unit = {
@@ -114,10 +111,9 @@ class DGSearcherDaoMock(s: Semaphore, testNumber: Int) extends SearcherDao {
 
 }
 
-class ExtratorActorMock(s: Semaphore, name: String) extends Actor {
-
+class ExtractorActorMock(s: Semaphore, name: String) extends Actor {
   override def receive: Receive = {
-    case TotalIndexationMessageInit(token) => {
+    case TotalIndexationMessageInit(token) =>
       // Total indexation  execution simulated
       implicit val timeout: Timeout = Timeout(60000, MILLISECONDS)
       for (res <- context.actorSelection("/user/" + name).resolveOne()) {
@@ -125,8 +121,8 @@ class ExtratorActorMock(s: Semaphore, name: String) extends Actor {
         println(res)
         managerActor ! DGManager.ManagerTotalIndexationEvent(token, IndexationStatus.SUCCESS)
       }
-    }
-    case PartialIndexationMessageInit() => {
+
+    case PartialIndexationMessageInit() =>
       // Total indexation  execution simulated
       implicit val timeout: Timeout = Timeout(60000, MILLISECONDS)
       for (res <- context.actorSelection("/user/" + name).resolveOne()) {
@@ -135,9 +131,7 @@ class ExtratorActorMock(s: Semaphore, name: String) extends Actor {
         managerActor ! DGManager.ManagerPartialIndexationEvent(IndexationStatus.SUCCESS)
         s.release()
       }
-    }
   }
-
 }
 
 class DGManagerTest extends FlatSpec {
@@ -151,10 +145,10 @@ class DGManagerTest extends FlatSpec {
     val scheduler: DGScheduler = new DGSchedulerTest(system, 1000, "", testNumber)
     val managerUtils: ManagerUtilsTest = new ManagerUtilsTest(scheduler, null, testNumber)
     val searcherDao: DGSearcherDaoMock = new DGSearcherDaoMock(null, testNumber)
-    val extractor: ActorRef = system.actorOf(Props(classOf[ExtratorActorMock], new Semaphore(1), "DGManagerTest_actor" + testNumber), "DGManagerTest_extractor" + testNumber)
-    val manager: ActorRef = system.actorOf(Props(classOf[DGManager],extractor,managerUtils,searcherDao), "DGManagerTest_actor" + testNumber)
+    val extractor: ActorRef = system.actorOf(Props(classOf[ExtractorActorMock], new Semaphore(1), "DGManagerTest_actor" + testNumber), "DGManagerTest_extractor" + testNumber)
+    val manager: ActorRef = system.actorOf(Props(classOf[DGManager], extractor, managerUtils, searcherDao), "DGManagerTest_actor" + testNumber)
 
-    val result = searcherDao.isChecked()
+    val result = searcherDao.isChecked
 
     assert(!result, "model must not be checked, because it is not checked")
 
@@ -171,13 +165,13 @@ class DGManagerTest extends FlatSpec {
     val scheduler: DGScheduler = new DGSchedulerTest(system, 1000, "", testNumber)
     val managerUtils: ManagerUtilsTest = new ManagerUtilsTest(scheduler, s, testNumber)
     val searcherDao: DGSearcherDaoMock = new DGSearcherDaoMock(s, testNumber)
-    val extractor = system.actorOf(Props(classOf[ExtratorActorMock], s, "DGManagerTest_actor" + testNumber), "DGManagerTest_extractor" + testNumber)
+    val extractor = system.actorOf(Props(classOf[ExtractorActorMock], s, "DGManagerTest_actor" + testNumber), "DGManagerTest_extractor" + testNumber)
     val manager = system.actorOf(Props(classOf[DGManager],extractor,managerUtils, searcherDao), "DGManagerTest_actor" + testNumber)
 
     s.acquire(1)
     s.release()
 
-    val result = searcherDao.getModelsJson()
+    val result = searcherDao.getModelsJson
 
     assertResult(Some(reference))(result)
 
@@ -192,7 +186,7 @@ class DGManagerTest extends FlatSpec {
     val scheduler: DGScheduler = new DGSchedulerTest(system, 1000, "", testNumber)
     val managerUtils: ManagerUtilsTest = new ManagerUtilsTest(scheduler, s, testNumber)
     val searcherDao: DGSearcherDaoMock = new DGSearcherDaoMock(s, testNumber)
-    val extractor = system.actorOf(Props(classOf[ExtratorActorMock],s, "DGManagerTest_actor" + testNumber), "DGManagerTest_extractor" + testNumber)
+    val extractor = system.actorOf(Props(classOf[ExtractorActorMock],s, "DGManagerTest_actor" + testNumber), "DGManagerTest_extractor" + testNumber)
     val manager = system.actorOf(Props(classOf[DGManager],extractor,managerUtils, searcherDao), "DGManagerTest_actor" + testNumber)
 
     s.acquire(1)
@@ -213,15 +207,15 @@ class DGManagerTest extends FlatSpec {
     scheduler.createTotalIndexerScheduling()
     val managerUtils: ManagerUtilsTest = new ManagerUtilsTest(scheduler, s, testNumber)
     val searcherDao: DGSearcherDaoMock = new DGSearcherDaoMock(s, testNumber)
-    val extractor = system.actorOf(Props(classOf[ExtratorActorMock],s, "DGManagerTest_actor" + testNumber), "DGManagerTest_extractor" + testNumber)
+    val extractor = system.actorOf(Props(classOf[ExtractorActorMock],s, "DGManagerTest_actor" + testNumber), "DGManagerTest_extractor" + testNumber)
     val manager = system.actorOf(Props(classOf[DGManager],extractor,managerUtils, searcherDao), "DGManagerTest_actor" + testNumber)
 
     s.acquire(1)
     s.release()
 
     // Getting here is working. Otherwise will be blocked
-    assert(managerUtils.isModelGenerated(), "Model has not been generated!")
-    assertResult(5)(searcherDao.getTotalIndexationSteps())
+    assert(managerUtils.isModelGenerated, "Model has not been generated!")
+    assertResult(5)(searcherDao.getTotalIndexationSteps)
 
   }
 

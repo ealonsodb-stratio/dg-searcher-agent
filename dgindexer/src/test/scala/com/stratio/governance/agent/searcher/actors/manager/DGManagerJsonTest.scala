@@ -4,7 +4,6 @@ import com.stratio.governance.agent.searcher.actors.dao.searcher.{DGSearcherDao,
 import com.stratio.governance.agent.searcher.actors.manager.dao.SourceDao
 import com.stratio.governance.agent.searcher.actors.manager.utils.defimpl.DGManagerUtils
 import com.stratio.governance.agent.searcher.http.{HttpException, HttpManager}
-import org.apache.http.client.methods.CloseableHttpResponse
 import org.scalatest.FlatSpec
 
 class HttpManagerMock extends HttpManager {
@@ -20,15 +19,12 @@ class HttpManagerMock extends HttpManager {
   @throws(classOf[HttpException])
   override def initTotalIndexationProcess(model: String): String = {
     model match {
-      case "case1" => {
+      case "case1" =>
         "{\"token\":\"dde76989-4725-4ba2-82fd-400b07d32b32\",\"status\":\"INDEXING\",\"last_status_change\":\"2018-12-05T07:57:07.911+0000\",\"time_stats\":{\"total\":16068}}"
-      }
-      case "case2" => {
+      case "case2" =>
         "{\"token\":\"dde76989-4725-4ba2-82fd-400b07d32b32\",\"status\":\"CANCELLED\",\"last_status_change\":\"2018-12-05T07:57:07.911+0000\",\"time_stats\":{\"total\":16068}}"
-      }
-      case "_" => {
+      case "_" =>
         "{}"
-      }
     }
   }
 
@@ -88,9 +84,8 @@ class DGManagerJsonTest extends FlatSpec {
       searchDao.initTotalIndexationProcess("case2")
       assert(false,"method must throw an exception")
     } catch {
-      case DGSearcherDaoException(message) => {
+      case DGSearcherDaoException(message) =>
         assertResult("status is not INDEXING")(message)
-      }
     }
   }
 

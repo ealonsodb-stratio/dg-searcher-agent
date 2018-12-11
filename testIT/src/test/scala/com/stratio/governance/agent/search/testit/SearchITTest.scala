@@ -21,14 +21,12 @@ class SearchITTest extends FlatSpec {
       httpManagerExc.getManagerModels()
       assert(false,"An exception must have been thrown")
     } catch {
-      case e: HttpException => {
+      case e: HttpException =>
         e match {
-          case HttpException(code, request, response) => {
+          case HttpException(code, request, response) =>
             assertResult("000")(code)
             assert(response.contains("Connection refused"), "Error does not contain 'Connection Refused' message")
-          }
         }
-      }
     }
   }
 
@@ -64,7 +62,7 @@ class SearchITTest extends FlatSpec {
 
   "Create model " should " work without errors" in {
 
-    val res = httpManager.insertOrUpdateModel(Configuration.MODEL,"{\"name\":\"Governance Search Test\",\"model\":{\"id\":\"id\",\"language\":\"spanish\",\"fields\":[{\"field\":\"id\",\"name\":\"Name\",\"type\":\"text\",\"searchable\":false,\"sortable\":false,\"aggregable\":false},{\"field\":\"name\",\"name\":\"Name\",\"type\":\"text\",\"searchable\":true,\"sortable\":true,\"aggregable\":false},{\"field\":\"description\",\"name\":\"Description\",\"type\":\"text\",\"searchable\":true,\"sortable\":true,\"aggregable\":false},{\"field\":\"metadataPath\",\"name\":\"Metadata Path\",\"type\":\"text\",\"searchable\":true,\"sortable\":true,\"aggregable\":false},{\"field\":\"type\",\"name\":\"Data Stores\",\"type\":\"text\",\"searchable\":true,\"sortable\":true,\"aggregable\":true},{\"field\":\"subtype\",\"name\":\"Type\",\"type\":\"text\",\"searchable\":true,\"sortable\":true,\"aggregable\":true},{\"field\":\"tenant\",\"name\":\"Tenant\",\"type\":\"text\",\"searchable\":true,\"sortable\":true,\"aggregable\":false},{\"field\":\"active\",\"name\":\"Active\",\"type\":\"boolean\",\"searchable\":true,\"sortable\":true,\"aggregable\":false},{\"field\":\"discoveredAt\",\"name\":\"Access Time\",\"type\":\"date\",\"format\":\"yyyy-MM-dd'T'HH:mm:ss.SSS\",\"searchable\":true,\"sortable\":true,\"aggregable\":false},{\"field\":\"modifiedAt\",\"name\":\"Access Time\",\"type\":\"date\",\"format\":\"yyyy-MM-dd'T'HH:mm:ss.SSS\",\"searchable\":true,\"sortable\":true,\"aggregable\":false},{\"field\":\"businessTerms\",\"name\":\"Business Terms\",\"type\":\"text\",\"searchable\":true,\"sortable\":true,\"aggregable\":true},{\"field\":\"qualityRules\",\"name\":\"Quality Rules\",\"type\":\"text\",\"searchable\":true,\"sortable\":true,\"aggregable\":true},{\"field\":\"keys\",\"name\":\"Keys\",\"type\":\"text\",\"searchable\":true,\"sortable\":true,\"aggregable\":true},{\"field\":\"key.OWNER\",\"name\":\"key.OWNER\",\"type\":\"text\",\"searchable\":true,\"sortable\":true,\"aggregable\":true},{\"field\":\"key.QUALITY\",\"name\":\"key.QUALITY\",\"type\":\"text\",\"searchable\":true,\"sortable\":true,\"aggregable\":false}]},\"search_fields\":{\"name\":1,\"description\":1,\"metadataPath\":1,\"type\":1,\"subtype\":1,\"tenant\":1,\"active\":1,\"discoveredAt\":1,\"modifiedAt\":1,\"businessTerms\":1,\"qualityRules\":1,\"keys\":1,\"key.OWNER\":1,\"key.QUALITY\":1}}")
+    httpManager.insertOrUpdateModel(Configuration.MODEL,"{\"name\":\"Governance Search Test\",\"model\":{\"id\":\"id\",\"language\":\"spanish\",\"fields\":[{\"field\":\"id\",\"name\":\"Name\",\"type\":\"text\",\"searchable\":false,\"sortable\":false,\"aggregable\":false},{\"field\":\"name\",\"name\":\"Name\",\"type\":\"text\",\"searchable\":true,\"sortable\":true,\"aggregable\":false},{\"field\":\"description\",\"name\":\"Description\",\"type\":\"text\",\"searchable\":true,\"sortable\":true,\"aggregable\":false},{\"field\":\"metadataPath\",\"name\":\"Metadata Path\",\"type\":\"text\",\"searchable\":true,\"sortable\":true,\"aggregable\":false},{\"field\":\"type\",\"name\":\"Data Stores\",\"type\":\"text\",\"searchable\":true,\"sortable\":true,\"aggregable\":true},{\"field\":\"subtype\",\"name\":\"Type\",\"type\":\"text\",\"searchable\":true,\"sortable\":true,\"aggregable\":true},{\"field\":\"tenant\",\"name\":\"Tenant\",\"type\":\"text\",\"searchable\":true,\"sortable\":true,\"aggregable\":false},{\"field\":\"active\",\"name\":\"Active\",\"type\":\"boolean\",\"searchable\":true,\"sortable\":true,\"aggregable\":false},{\"field\":\"discoveredAt\",\"name\":\"Access Time\",\"type\":\"date\",\"format\":\"yyyy-MM-dd'T'HH:mm:ss.SSS\",\"searchable\":true,\"sortable\":true,\"aggregable\":false},{\"field\":\"modifiedAt\",\"name\":\"Access Time\",\"type\":\"date\",\"format\":\"yyyy-MM-dd'T'HH:mm:ss.SSS\",\"searchable\":true,\"sortable\":true,\"aggregable\":false},{\"field\":\"businessTerms\",\"name\":\"Business Terms\",\"type\":\"text\",\"searchable\":true,\"sortable\":true,\"aggregable\":true},{\"field\":\"qualityRules\",\"name\":\"Quality Rules\",\"type\":\"text\",\"searchable\":true,\"sortable\":true,\"aggregable\":true},{\"field\":\"keys\",\"name\":\"Keys\",\"type\":\"text\",\"searchable\":true,\"sortable\":true,\"aggregable\":true},{\"field\":\"key.OWNER\",\"name\":\"key.OWNER\",\"type\":\"text\",\"searchable\":true,\"sortable\":true,\"aggregable\":true},{\"field\":\"key.QUALITY\",\"name\":\"key.QUALITY\",\"type\":\"text\",\"searchable\":true,\"sortable\":true,\"aggregable\":false}]},\"search_fields\":{\"name\":1,\"description\":1,\"metadataPath\":1,\"type\":1,\"subtype\":1,\"tenant\":1,\"active\":1,\"discoveredAt\":1,\"modifiedAt\":1,\"businessTerms\":1,\"qualityRules\":1,\"keys\":1,\"key.OWNER\":1,\"key.QUALITY\":1}}")
 
     // Getting here is to work well
     assert(true)
@@ -73,7 +71,7 @@ class SearchITTest extends FlatSpec {
 
   "Partial indexation " should " index a document without errors" in {
 
-    val data = "[{\"id\":1,\"name\":\"HdfsStore\",\"description\":\"Empty DataStore\",\"metadataPath\":\"emptyDatastore:\",\"type\":\"HDFS\",\"subtype\":\"Table\",\"tenant\":\"stratio\",\"dicoveredAt\":\"2018-09-28T20:45:00.000\",\"modifiedAt\":\"2018-09-28T20:45:00.000\"}]";
+    val data = "[{\"id\":1,\"name\":\"HdfsStore\",\"description\":\"Empty DataStore\",\"metadataPath\":\"emptyDatastore:\",\"type\":\"HDFS\",\"subtype\":\"Table\",\"tenant\":\"stratio\",\"dicoveredAt\":\"2018-09-28T20:45:00.000\",\"modifiedAt\":\"2018-09-28T20:45:00.000\"}]"
 
     val res = httpManager.partialPostRequest(Configuration.MODEL, data)
     val json = parse(res)

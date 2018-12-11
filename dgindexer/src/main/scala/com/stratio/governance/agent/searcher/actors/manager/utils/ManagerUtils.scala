@@ -6,11 +6,11 @@ trait ManagerUtils {
 
   // Timing methods
   @throws(classOf[ManagerUtilsException])
-  def getScheduler(): Scheduler
+  def getScheduler: Scheduler
 
   // Manager Schema Operations
   @throws(classOf[ManagerUtilsException])
-  def getGeneratedModel(): String
+  def getGeneratedModel: String
 
 }
 

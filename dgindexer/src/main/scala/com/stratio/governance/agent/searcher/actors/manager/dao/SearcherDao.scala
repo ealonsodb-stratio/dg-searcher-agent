@@ -5,7 +5,7 @@ import com.stratio.governance.agent.searcher.actors.manager.utils.ManagerUtilsEx
 trait SearcherDao {
 
   @throws(classOf[ManagerUtilsException])
-  def getModels(): List[String]
+  def getModels: List[String]
 
   @throws(classOf[ManagerUtilsException])
   def checkTotalIndexation(model: String): (Boolean, Option[String])
