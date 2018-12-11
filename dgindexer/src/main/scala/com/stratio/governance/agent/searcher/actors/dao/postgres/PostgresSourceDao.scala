@@ -405,8 +405,6 @@ class PostgresSourceDao(sourceConnectionUrl: String,
     status = Some(state)
     status.get.update(connection)
   }
-
-
 }
 object PostgresSourceDao {
 

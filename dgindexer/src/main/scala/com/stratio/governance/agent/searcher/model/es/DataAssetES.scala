@@ -12,7 +12,7 @@ case class DataAssetES(id: Int,
                        alias: Option[String],
                        description: Option[String],
                        metadataPath: String,
-                       tpe: String,
+                       `type`: String,
                        subtype: String,
                        tenant: String,
                        active: Boolean,
@@ -72,7 +72,7 @@ case class DataAssetES(id: Int,
     if (alias.isDefined && (alias.get != null)) jsonObject = jsonObject ~ ("alias" -> JString(alias.get))
     if (description.isDefined && (description != null)) jsonObject = jsonObject ~ ("description" -> JString(description.get))
     jsonObject = jsonObject ~ ("metadataPath" -> JString(metadataPath))
-    jsonObject = jsonObject ~ ("type" -> JString(tpe))
+    jsonObject = jsonObject ~ ("type" -> JString(`type`))
     jsonObject = jsonObject ~ ("subtype" -> JString(subtype))
     jsonObject = jsonObject ~ ("tenant" -> JString(tenant))
     jsonObject = jsonObject ~ ("active" -> JBool(active))
