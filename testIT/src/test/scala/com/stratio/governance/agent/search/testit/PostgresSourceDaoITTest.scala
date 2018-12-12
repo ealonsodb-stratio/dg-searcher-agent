@@ -11,6 +11,9 @@ class PostgresSourceDaoITTest extends FlatSpec with BeforeAndAfterAll {
   val database: String = "dg_database"
 
   override def beforeAll(): Unit = {
+
+
+
     utils = PostgresUtils.builder("dg_database", "PostgresSourceDaoITTest")
       .withTable(
         PostgresTable("data_asset")
@@ -26,6 +29,30 @@ class PostgresSourceDaoITTest extends FlatSpec with BeforeAndAfterAll {
           .withColumn("modified_at","TIMESTAMP NOT NULL")
           .withConstraint("pk_data_asset PRIMARY KEY (id)")
           .withConstraint("u_data_asset_meta_data_path_tenant UNIQUE (metadata_path, tenant)")
+          .insert(Map( "id" -> "192", "name" -> "R_REGIONKEY", "description" -> "Hdfs parquet column", "metadata_path" -> "hdfsFinance://department/finance/'2018>/:region.parquet:R_REGIONKEY:", "type" -> "HDFS", "subtype" -> "FIELD", "tenant" -> "NONE", "properties" -> "'{\"type\": \"long\", \"default\": \"\", \"constraint\": \"\", \"schemaType\": \"parquet\"}'", "active" -> "true", "discovered_at" -> "'2018-12-10T08:27:17Z'", "modified_at" -> "'2018-12-10T08:27:17Z'"))
+          .insert(Map( "id" -> "193", "name" -> "region.parquet", "description" -> "Hdfs file", "metadata_path" -> "hdfsFinance://department/marketing/2017>/:region.parquet:", "type" -> "HDFS", "subtype" -> "RESOURCE", "tenant" -> "NONE", "properties" -> "'{\"group\": \"supergroup\", \"owner\": \"hdfs\", \"length\": 455, \"schema\": \"na\", \"blockSize\": 134217728, \"modifiedAt\": 1544433863730, \"isEncrypted\": \"false\", \"permissions\": \"644\", \"replication\": 3}'", "active" -> "true", "discovered_at" -> "'2018-12-10T08:27:17Z'", "modified_at" -> "'2018-12-10T08:27:17Z'"))
+          .insert(Map( "id" -> "194", "name" -> "finance", "description" -> "finance Hdfs directory", "metadata_path" -> "hdfsFinance://department>/finance:", "type" -> "HDFS", "subtype" -> "PATH", "tenant" -> "NONE", "properties" -> "'{\"group\": \"supergroup\", \"owner\": \"hdfs\", \"isEncrypted\": \"false\", \"permissions\": \"755\"}'", "active" -> "true", "discovered_at" -> "'2018-12-10T08:27:17Z'", "modified_at" -> "'2018-12-10T08:27:17Z'"))
+          .insert(Map( "id" -> "195", "name" -> "R_REGIONKEY", "description" -> "Hdfs parquet column", "metadata_path" -> "hdfsFinance://department/finance/2017>/:region.parquet:R_REGIONKEY:", "type" -> "HDFS", "subtype" -> "FIELD", "tenant" -> "NONE", "properties" -> "'{\"type\": \"long\", \"default\": \"\", \"constraint\": \"\", \"schemaType\": \"parquet\"}'", "active" -> "true", "discovered_at" -> "'2018-12-10T08:27:17Z'", "modified_at" -> "'2018-12-10T08:27:17Z'"))
+          .insert(Map( "id" -> "196", "name" -> "R_COMMENT", "description" -> "Hdfs parquet column", "metadata_path" -> "hdfsFinance://department/marketing/'2018>/:region.parquet:R_COMMENT:", "type" -> "HDFS", "subtype" -> "FIELD", "tenant" -> "NONE", "properties" -> "'{\"type\": \"org.apache.parquet.io.api.Binary\", \"default\": \"\", \"constraint\": \"\", \"schemaType\": \"parquet\"}'", "active" -> "true", "discovered_at" -> "'2018-12-10T08:27:17Z'", "modified_at" -> "'2018-12-10T08:27:17Z'"))
+          .insert(Map( "id" -> "197", "name" -> "hdfsFinance", "description" -> "Hdfs datastore", "metadata_path" -> "hdfsFinance:", "type" -> "HDFS", "subtype" -> "DS", "tenant" -> "NONE", "properties" -> "'{\"url\": \"url\", \"version\": \"1.0.0\", \"security\": \"TLS\"}'", "active" -> "true", "discovered_at" -> "'2018-12-10T08:27:17Z'", "modified_at" -> "'2018-12-10T08:27:17Z'"))
+          .insert(Map( "id" -> "198", "name" -> "department", "description" -> "Hdfs directory", "metadata_path" -> "hdfsFinance:/>/department:", "type" -> "HDFS", "subtype" -> "PATH", "tenant" -> "NONE", "properties" -> "'{\"group\": \"supergroup\", \"owner\": \"hdfs\", \"isEncrypted\": \"false\", \"permissions\": \"755\"}'", "active" -> "true", "discovered_at" -> "'2018-12-10T08:27:17Z'", "modified_at" -> "'2018-12-10T08:27:17Z'"))
+          .insert(Map( "id" -> "199", "name" -> "'2018", "description" -> "Hdfs directory", "metadata_path" -> "hdfsFinance://department/finance>/'2018:", "type" -> "HDFS", "subtype" -> "PATH", "tenant" -> "NONE", "properties" -> "'{\"group\": \"supergroup\", \"owner\": \"hdfs\", \"isEncrypted\": \"false\", \"permissions\": \"755\"}'", "active" -> "true", "discovered_at" -> "'2018-12-10T08:27:17Z'", "modified_at" -> "'2018-12-10T08:27:17Z'"))
+          .insert(Map( "id" -> "200", "name" -> "2017", "description" -> "Hdfs directory", "metadata_path" -> "hdfsFinance://department/finance>/2017:", "type" -> "HDFS", "subtype" -> "PATH", "tenant" -> "NONE", "properties" -> "'{\"group\": \"supergroup\", \"owner\": \"hdfs\", \"isEncrypted\": \"false\", \"permissions\": \"755\"}'", "active" -> "true", "discovered_at" -> "'2018-12-10T08:27:17Z'", "modified_at" -> "'2018-12-10T08:27:17Z'"))
+          .insert(Map( "id" -> "201", "name" -> "R_REGIONKEY", "description" -> "Hdfs parquet column", "metadata_path" -> "hdfsFinance://department/marketing/'2018>/:region.parquet:R_REGIONKEY:", "type" -> "HDFS", "subtype" -> "FIELD", "tenant" -> "NONE", "properties" -> "'{\"type\": \"long\", \"default\": \"\", \"constraint\": \"\", \"schemaType\": \"parquet\"}'", "active" -> "true", "discovered_at" -> "'2018-12-10T08:27:17Z'", "modified_at" -> "'2018-12-10T08:27:17Z'"))
+          .insert(Map( "id" -> "202", "name" -> "R_REGIONKEY", "description" -> "Hdfs parquet column", "metadata_path" -> "hdfsFinance://department/marketing/2017>/:region.parquet:R_REGIONKEY:", "type" -> "HDFS", "subtype" -> "FIELD", "tenant" -> "NONE", "properties" -> "'{\"type\": \"long\", \"default\": \"\", \"constraint\": \"\", \"schemaType\": \"parquet\"}'", "active" -> "true", "discovered_at" -> "'2018-12-10T08:27:17Z'", "modified_at" -> "'2018-12-10T08:27:17Z'"))
+          .insert(Map( "id" -> "203", "name" -> "R_COMMENT", "description" -> "Hdfs parquet column", "metadata_path" -> "hdfsFinance://department/finance/'2018>/:region.parquet:R_COMMENT:", "type" -> "HDFS", "subtype" -> "FIELD", "tenant" -> "NONE", "properties" -> "'{\"type\": \"org.apache.parquet.io.api.Binary\", \"default\": \"\", \"constraint\": \"\", \"schemaType\": \"parquet\"}'", "active" -> "true", "discovered_at" -> "'2018-12-10T08:27:17Z'", "modified_at" -> "'2018-12-10T08:27:17Z'"))
+          .insert(Map( "id" -> "204", "name" -> "marketing", "description" -> "Hdfs directory", "metadata_path" -> "hdfsFinance://department>/marketing:", "type" -> "HDFS", "subtype" -> "PATH", "tenant" -> "NONE", "properties" -> "'{\"group\": \"supergroup\", \"owner\": \"hdfs\", \"isEncrypted\": \"false\", \"permissions\": \"755\"}'", "active" -> "true", "discovered_at" -> "'2018-12-10T08:27:17Z'", "modified_at" -> "'2018-12-10T08:27:17Z'"))
+          .insert(Map( "id" -> "205", "name" -> "R_COMMENT", "description" -> "Hdfs parquet column", "metadata_path" -> "hdfsFinance://department/marketing/2017>/:region.parquet:R_COMMENT:", "type" -> "HDFS", "subtype" -> "FIELD", "tenant" -> "NONE", "properties" -> "'{\"type\": \"org.apache.parquet.io.api.Binary\", \"default\": \"\", \"constraint\": \"\", \"schemaType\": \"parquet\"}'", "active" -> "true", "discovered_at" -> "'2018-12-10T08:27:17Z'", "modified_at" -> "'2018-12-10T08:27:17Z'"))
+          .insert(Map( "id" -> "206", "name" -> "region.parquet", "description" -> "Hdfs file", "metadata_path" -> "hdfsFinance://department/marketing/'2018>/:region.parquet:", "type" -> "HDFS", "subtype" -> "RESOURCE", "tenant" -> "NONE", "properties" -> "'{\"group\": \"supergroup\", \"owner\": \"hdfs\", \"length\": 455, \"schema\": \"na\", \"blockSize\": 134217728, \"modifiedAt\": 1544433868101, \"isEncrypted\": \"false\", \"permissions\": \"644\", \"replication\": 3}'", "active" -> "true", "discovered_at" -> "'2018-12-10T08:27:17Z'", "modified_at" -> "'2018-12-10T08:27:17Z'"))
+          .insert(Map( "id" -> "207", "name" -> "R_NAME", "description" -> "Hdfs parquet column", "metadata_path" -> "hdfsFinance://department/marketing/2017>/:region.parquet:R_NAME:", "type" -> "HDFS", "subtype" -> "FIELD", "tenant" -> "NONE", "properties" -> "'{\"type\": \"org.apache.parquet.io.api.Binary\", \"default\": \"\", \"constraint\": \"\", \"schemaType\": \"parquet\"}'", "active" -> "true", "discovered_at" -> "'2018-12-10T08:27:17Z'", "modified_at" -> "'2018-12-10T08:27:17Z'"))
+          .insert(Map( "id" -> "208", "name" -> "R_NAME", "description" -> "Hdfs parquet column", "metadata_path" -> "hdfsFinance://department/finance/'2018>/:region.parquet:R_NAME:", "type" -> "HDFS", "subtype" -> "FIELD", "tenant" -> "NONE", "properties" -> "'{\"type\": \"org.apache.parquet.io.api.Binary\", \"default\": \"\", \"constraint\": \"\", \"schemaType\": \"parquet\"}'", "active" -> "true", "discovered_at" -> "'2018-12-10T08:27:17Z'", "modified_at" -> "'2018-12-10T08:27:17Z'"))
+          .insert(Map( "id" -> "209", "name" -> "R_NAME", "description" -> "Hdfs parquet column", "metadata_path" -> "hdfsFinance://department/finance/2017>/:region.parquet:R_NAME:", "type" -> "HDFS", "subtype" -> "FIELD", "tenant" -> "NONE", "properties" -> "'{\"type\": \"org.apache.parquet.io.api.Binary\", \"default\": \"\", \"constraint\": \"\", \"schemaType\": \"parquet\"}'", "active" -> "true", "discovered_at" -> "'2018-12-10T08:27:17Z'", "modified_at" -> "'2018-12-10T08:27:17Z'"))
+          .insert(Map( "id" -> "210", "name" -> "R_NAME", "description" -> "Hdfs parquet column", "metadata_path" -> "hdfsFinance://department/marketing/'2018>/:region.parquet:R_NAME:", "type" -> "HDFS", "subtype" -> "FIELD", "tenant" -> "NONE", "properties" -> "'{\"type\": \"org.apache.parquet.io.api.Binary\", \"default\": \"\", \"constraint\": \"\", \"schemaType\": \"parquet\"}'", "active" -> "true", "discovered_at" -> "'2018-12-10T08:27:17Z'", "modified_at" -> "'2018-12-10T08:27:17Z'"))
+          .insert(Map( "id" -> "211", "name" -> "region.parquet", "description" -> "Hdfs file", "metadata_path" -> "hdfsFinance://department/finance/2017>/:region.parquet:", "type" -> "HDFS", "subtype" -> "RESOURCE", "tenant" -> "NONE", "properties" -> "'{\"group\": \"supergroup\", \"owner\": \"hdfs\", \"length\": 455, \"schema\": \"na\", \"blockSize\": 134217728, \"modifiedAt\": 1544433853808, \"isEncrypted\": \"false\", \"permissions\": \"644\", \"replication\": 3}'", "active" -> "true", "discovered_at" -> "'2018-12-10T08:27:17Z'", "modified_at" -> "'2018-12-10T08:27:17Z'"))
+          .insert(Map( "id" -> "212", "name" -> "'2018", "description" -> " Hdfs directory", "metadata_path" -> "hdfsFinance://department/marketing>/'2018:", "type" -> "HDFS", "subtype" -> "PATH", "tenant" -> "NONE", "properties" -> "'{\"group\": \"supergroup\", \"owner\": \"hdfs\", \"isEncrypted\": \"false\", \"permissions\": \"755\"}'", "active" -> "true", "discovered_at" -> "'2018-12-10T08:27:17Z'", "modified_at" -> "'2018-12-10T08:27:17Z'"))
+          .insert(Map( "id" -> "213", "name" -> "region.parquet", "description" -> "Hdfs file", "metadata_path" -> "hdfsFinance://department/finance/'2018>/:region.parquet:", "type" -> "HDFS", "subtype" -> "RESOURCE", "tenant" -> "NONE", "properties" -> "'{\"group\": \"supergroup\", \"owner\": \"hdfs\", \"length\": 455, \"schema\": \"na\", \"blockSize\": 134217728, \"modifiedAt\": 1544433849615, \"isEncrypted\": \"false\", \"permissions\": \"644\", \"replication\": 3}'", "active" -> "true", "discovered_at" -> "'2018-12-10T08:27:17Z'", "modified_at" -> "'2018-12-10T08:27:17Z'"))
+          .insert(Map( "id" -> "214", "name" -> "2017", "description" -> "Hdfs directory", "metadata_path" -> "hdfsFinance://department/marketing>/2017:", "type" -> "HDFS", "subtype" -> "PATH", "tenant" -> "NONE", "properties" -> "'{\"group\": \"supergroup\", \"owner\": \"hdfs\", \"isEncrypted\": \"false\", \"permissions\": \"755\"}'", "active" -> "true", "discovered_at" -> "'2018-12-10T08:27:17Z'", "modified_at" -> "'2018-12-10T08:27:17Z'"))
+          .insert(Map( "id" -> "215", "name" -> "R_COMMENT", "description" -> "Hdfs parquet column", "metadata_path" -> "hdfsFinance://department/finance/2017>/:region.parquet:R_COMMENT:", "type" -> "HDFS", "subtype" -> "FIELD", "tenant" -> "NONE", "properties" -> "'{\"type\": \"org.apache.parquet.io.api.Binary\", \"default\": \"\", \"constraint\": \"\", \"schemaType\": \"parquet\"}'", "active" -> "true", "discovered_at" -> "'2018-12-10T08:27:17Z'", "modified_at" -> "'2018-12-10T08:27:17Z'"))
       )
       .withTable(
         PostgresTable("partial_indexation_state")
@@ -53,6 +80,8 @@ class PostgresSourceDaoITTest extends FlatSpec with BeforeAndAfterAll {
           .withColumn("modified_at","TIMESTAMP NOT NULL")
           .withConstraint("pk_key PRIMARY KEY (id)")
           .withConstraint("u_key_key_tenant UNIQUE (key, tenant)")
+          .insert(Map( "id" -> "1", "key" -> "OWNER", "description" -> "Owner", "status" -> "true", "tenant" -> "NONE", "modified_at" -> "'2018-12-10T08:27:17Z'"))
+          .insert(Map( "id" -> "2", "key" -> "QUALITY", "description" -> "Quality", "status" -> "true", "tenant" -> "NONE", "modified_at" -> "'2018-12-10T08:27:17Z'"))
       )
       .withTable(
         PostgresTable("key_data_asset")
@@ -65,6 +94,7 @@ class PostgresSourceDaoITTest extends FlatSpec with BeforeAndAfterAll {
           .withConstraint("pk_key_value PRIMARY KEY (id)")
           .withConstraint("fk_key_value_key FOREIGN KEY (key_id) REFERENCES dg_metadata.key(id) ON DELETE CASCADE")
           .withConstraint("fk_key_value_data_asset FOREIGN KEY (data_asset_id) REFERENCES dg_metadata.data_asset(id) ON DELETE CASCADE")
+          .insert(Map( "id" -> "2", "value" -> "finance", "key_id" -> "1", "data_asset_id" -> "201", "tenant" -> "NONE", "modified_at" -> "'2018-12-10T08:27:17Z'"))
       )
       .withTable(
         PostgresTable("community")
@@ -74,6 +104,7 @@ class PostgresSourceDaoITTest extends FlatSpec with BeforeAndAfterAll {
           .withColumn("tenant","TEXT NOT NULL")
           .withConstraint("pk_community PRIMARY KEY(id)")
           .withConstraint("u_community_name_tenant UNIQUE (name, tenant)")
+          .insert(Map( "id" -> "1", "name" -> "Marketing", "description" -> "Description marketing", "tenant" -> "NONE"))
       )
       .withTable(
         PostgresTable("domain")
@@ -84,6 +115,7 @@ class PostgresSourceDaoITTest extends FlatSpec with BeforeAndAfterAll {
           .withConstraint("pk_domain PRIMARY KEY(id)")
           .withConstraint("u_domain_name_community_id UNIQUE (name, community_id)")
           .withConstraint("fk_domain_community FOREIGN KEY (community_id) REFERENCES dg_metadata.community(id) ON DELETE CASCADE")
+          .insert(Map( "id" -> "1", "name" -> "Marketing domain", "description" -> "Description marketing domain", "community_id" -> "1", "tenant" -> "NONE"))
       )
       .withTable(
         PostgresTable("business_assets_type")
@@ -92,7 +124,7 @@ class PostgresSourceDaoITTest extends FlatSpec with BeforeAndAfterAll {
           .withColumn("description","TEXT")
           .withColumn("properties","jsonb")
           .withConstraint("pk_business_assets_type PRIMARY KEY(id)")
-          .insert(Map("name"-> "'TERM'", "description" -> "'Business term'", "properties" -> "'{\"description\":\"string\",\"examples\":\"string\"}'"))
+          .insert(Map("name" -> "'TERM'", "description" -> "'Business term'", "properties" -> "'{\"description\":\"string\",\"examples\":\"string\"}'"))
           //.insert(Map("name"-> "'QR'", "description" -> "'Quality rules'", "properties" -> "'{\"volumetria\":\"integer\",\"regex\":\"string\"}'"))
       )
       .withTable(
@@ -101,9 +133,9 @@ class PostgresSourceDaoITTest extends FlatSpec with BeforeAndAfterAll {
           .withColumn("name","TEXT NOT NULL")
           .withColumn("description","TEXT")
           .withConstraint("pk_business_assets_status PRIMARY KEY(id)")
-          .insert(Map("description"-> "'Approved'", "name"-> "'APR'"))
-          .insert(Map("description"-> "'Pending'", "name"-> "'PEN'"))
-          .insert(Map("description"-> "'Under review'", "name"-> "'UNR'"))
+          .insert(Map("description" -> "'Approved'", "name" -> "'APR'"))
+          .insert(Map("description" -> "'Pending'", "name" -> "'PEN'"))
+          .insert(Map("description" -> "'Under review'", "name" -> "'UNR'"))
       )
       .withTable(
         PostgresTable("business_assets")
@@ -121,6 +153,9 @@ class PostgresSourceDaoITTest extends FlatSpec with BeforeAndAfterAll {
           .withConstraint("fk_business_assets_domain FOREIGN KEY (domain_id) REFERENCES dg_metadata.domain(id) ON DELETE CASCADE")
           .withConstraint("fk_business_assets_business_assets_status FOREIGN KEY (business_assets_status_id) REFERENCES dg_metadata.business_assets_status(id)")
           .withConstraint("u_business_assets_name_domain_id UNIQUE (name, domain_id)")
+          .insert(Map( "id" -> "1", "name" -> "Production", "description" -> "desc bt1", "properties" -> "'{}'", "tenant" -> "NONE", "business_assets_type_id" -> "1", "domain_id" -> "1", "business_assets_status_id" -> "1", "modified_at" -> "'2018-12-10T08:27:17Z'"))
+          .insert(Map( "id" -> "2", "name" -> "Client", "description" -> "desc bt1", "properties" -> "'{}'", "tenant" -> "NONE", "business_assets_type_id" -> "1", "domain_id" -> "1", "business_assets_status_id" -> "1", "modified_at" -> "'2018-12-10T08:27:17Z'"))
+          .insert(Map( "id" -> "3", "name" -> "Department", "description" -> "desc bt1", "properties" -> "'{}'", "tenant" -> "NONE", "business_assets_type_id" -> "1", "domain_id" -> "1", "business_assets_status_id" -> "1", "modified_at" -> "'2018-12-10T08:27:17Z'"))
       )
       .withTable(
         PostgresTable("business_assets_data_asset")
@@ -135,8 +170,9 @@ class PostgresSourceDaoITTest extends FlatSpec with BeforeAndAfterAll {
           .withConstraint("fk_business_assets_business_assets_id_business_assets FOREIGN KEY (business_assets_id) REFERENCES dg_metadata.business_assets(id) ON DELETE CASCADE")
           .withConstraint("fk_business_assets_data_asset_id_data_asset FOREIGN KEY (data_asset_id) REFERENCES dg_metadata.data_asset(id) ON DELETE CASCADE")
           .withConstraint("u_business_assets_data_asset_data_asset_id_business_assets_id UNIQUE (data_asset_id, business_assets_id)")
+          .insert(Map( "id" -> "1", "name" -> "", "description" -> "", "tenant" -> "NONE", "data_asset_id" -> "201", "business_assets_id" -> "1", "modified_at" -> "'2018-12-10T08:27:17Z'"))
       )
-      .build.createAll
+      .build.createAndInsertAll
   }
 
   override def afterAll(): Unit = {
@@ -148,8 +184,6 @@ class PostgresSourceDaoITTest extends FlatSpec with BeforeAndAfterAll {
     val schema : String = "schema"
     val exponentialBackOff :ExponentialBackOff = ExponentialBackOff(AppConf.extractorExponentialbackoffPauseMs, AppConf.extractorExponentialbackoffMaxErrorRetry)
     val postgresDao: PostgresSourceDao = new PostgresSourceDao(AppConf.sourceConnectionUrl, AppConf.sourceConnectionUser, AppConf.sourceConnectionPassword, database, schema, 1, 4, exponentialBackOff,true)
-
-
     
   }
 

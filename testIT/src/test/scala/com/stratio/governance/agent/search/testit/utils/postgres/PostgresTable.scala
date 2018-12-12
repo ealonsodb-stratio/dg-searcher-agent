@@ -18,6 +18,10 @@ case class PostgresTable(name: String, ifNotExist: Boolean = false) {
   }
 
   def insert(value: Map[String, String]): PostgresTable = {
+    val keysNotInColumns = value.keys.filter(!columns.keys.toList.contains(_))
+    if (keysNotInColumns.nonEmpty) {
+      throw new IllegalArgumentException("You try to insert over non-created columns: ".concat(keysNotInColumns.mkString(", ")))
+    }
     inserts += value
     this
   }

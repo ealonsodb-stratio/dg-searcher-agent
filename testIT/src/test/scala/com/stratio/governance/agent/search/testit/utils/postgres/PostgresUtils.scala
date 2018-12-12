@@ -3,6 +3,7 @@ package com.stratio.governance.agent.search.testit.utils.postgres
 import java.sql.ResultSet
 
 case class PostgresUtils(databaseName: String, schemaName: String, tables: List[PostgresTable]) {
+  val tables_by_name: Map[String, PostgresTable] = tables.map(table => table.name -> table).toMap
 
   val connection: PostgresConnection= new PostgresConnection()
 
@@ -28,7 +29,7 @@ case class PostgresUtils(databaseName: String, schemaName: String, tables: List[
     this
   }
 
-  def createAll: PostgresUtils = createDatabase.createSchema.createTablesAndInsert
+  def createAndInsertAll: PostgresUtils = createDatabase.createSchema.createTablesAndInsert
 
   def dropAll: PostgresUtils = dropDatabase
 
@@ -49,7 +50,7 @@ case class PostgresUtils(databaseName: String, schemaName: String, tables: List[
     this
   }
 
-  def insertIntoTables: PostgresUtils = {
+  def insertIntoTables(): PostgresUtils = {
     tables.foreach((table: PostgresTable)=> {
       table.generateInserts(schemaName).foreach(execute)
     })
@@ -57,7 +58,7 @@ case class PostgresUtils(databaseName: String, schemaName: String, tables: List[
   }
 
   def createTablesAndInsert: PostgresUtils = {
-    createTables.insertIntoTables
+    createTables.insertIntoTables()
   }
 
   def dropTables: PostgresUtils = {
@@ -70,6 +71,10 @@ case class PostgresUtils(databaseName: String, schemaName: String, tables: List[
   def execute (query: String): ResultSet = {
     connection.execute(query)
   }
+
+  def getTable(name: String): PostgresTable =
+    tables_by_name(name)
+
 }
 
 object PostgresUtils {
