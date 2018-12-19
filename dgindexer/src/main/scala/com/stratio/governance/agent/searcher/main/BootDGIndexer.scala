@@ -35,7 +35,7 @@ object BootDGIndexer extends App with LazyLogging {
     // Initialize indexer params objects
     val exponentialBackOff: ExponentialBackOff = ExponentialBackOff(AppConf.extractorExponentialbackoffPauseMs, AppConf.extractorExponentialbackoffMaxErrorRetry)
     val sourceDao = new PostgresSourceDao(AppConf.sourceConnectionUrl, AppConf.sourceConnectionUser, AppConf.sourceConnectionPassword, AppConf.sourceDatabase, AppConf.sourceSchema, AppConf.sourceConnectionInitialSize, AppConf.sourceConnectionMaxSize, exponentialBackOff)
-    val httpManager = new DGHttpManager(AppConf.managerUrl, AppConf.indexerURL)
+    val httpManager = new DGHttpManager(AppConf.searcherManagerUrl, AppConf.searcherIndexerURL)
     val searcherDao = new DGSearcherDao(httpManager)
     val scheduler = new DGScheduler(system, AppConf.schedulerPartialEnabled, AppConf.schedulerPartialInterval, AppConf.schedulerTotalEnabled, AppConf.schedulerTotalCronExpresion)
     scheduler.createTotalIndexerScheduling()

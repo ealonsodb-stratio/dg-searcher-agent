@@ -8,6 +8,13 @@ object AppConf {
 
   private lazy val config = ConfigFactory.load
 
+  val configurationName = envOrElseConfigOrException("configuration.name")
+
+  private def envOrElseConfigOrException(path: String): String = {
+    Properties.envOrNone(path.toUpperCase.replaceAll("""\.""", "_"))
+      .orElse(if (config.hasPath(path)) Some(config.getString(path)) else None).getOrElse(throw new IllegalStateException("Config value: \"configuration.name\" must be set in application.conf"))
+  }
+
   private def envOrElseConfigOrElseDefault(path: String, defaultValue: Int): Int = {
     Properties.envOrNone(path.toUpperCase.replaceAll("""\.""", "_")).map(_.toInt)
       .getOrElse(if (config.hasPath(path)) config.getInt(path) else defaultValue)
@@ -38,7 +45,7 @@ object AppConf {
 
   lazy val extractorDelayMs: Long = envOrElseConfigOrElseDefault("extractor.delay.ms",1000)
 
-  lazy val sourceDatabase: String = envOrElseConfigOrElseDefault("source.database", "dg_database")
+  lazy val sourceDatabase: String = envOrElseConfigOrElseDefault("source.database", "governance")
 
   lazy val sourceSchema: String = envOrElseConfigOrElseDefault("source.schema", "dg_metadata")
 
@@ -54,9 +61,11 @@ object AppConf {
 
   lazy val indexerPartition: Int = envOrElseConfigOrElseDefault("indexer.partition",1000)
 
-  lazy val managerUrl: String = envOrElseConfigOrElseDefault("manager.manager.url","http://localhost:8080")
+  lazy val searcherManagerUrl: String = envOrElseConfigOrElseDefault("searcher.manager.url","http://localhost:8080")
 
-  lazy val indexerURL: String = envOrElseConfigOrElseDefault("manager.indexer.url","http://localhost:8082")
+  lazy val searcherIndexerURL: String = envOrElseConfigOrElseDefault("searcher.indexer.url","http://localhost:8082")
+
+  lazy val searcherModel: String = envOrElseConfigOrElseDefault("searcher.model","governance_search")
 
   lazy val schedulerPartialEnabled: Boolean = envOrElseConfigOrElseDefault("scheduler.partialIndexation.enabled",true)
 

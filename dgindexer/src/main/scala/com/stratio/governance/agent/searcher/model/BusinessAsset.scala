@@ -5,14 +5,15 @@ import java.sql.{ResultSet, Timestamp}
 import com.stratio.governance.agent.searcher.model.utils.TimestampUtils
 
 object BusinessType extends Enumeration {
+  type Value
   val TERM: BusinessType.Value = Value
-
   def fromString(value: String): BusinessType.Value = {
     BusinessType.withName(value)
   }
 }
 
 object BusinessStatus extends Enumeration {
+  type Value
   val APR, PEN, UNR: BusinessStatus.Value = Value
 
   def fromString(value: String): BusinessStatus.Value = {

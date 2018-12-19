@@ -29,8 +29,8 @@
         <debug.suspend>n</debug.suspend>
         <dg.commons.version>0.9.0-SNAPSHOT</dg.commons.version>
         <encoding>UTF-8</encoding>
-        <http_client_version>4.5.5</http_client_version>
-        <json4s_version>3.5.2</json4s_version>
+        <http_client.version>4.5.5</http_client.version>
+        <json4s.version>3.5.2</json4s.version>
         <logback.version>1.2.3</logback.version>
         <log4j-over-slf4j.version>1.7.25</log4j-over-slf4j.version>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -40,7 +40,7 @@
         <scala.binary.version>2.11</scala.binary.version>
         <scala.mock.version>4.1.0</scala.mock.version>
         <scala.version>${scala.binary.version}.12</scala.version>
-        <scala-logging>3.9.0</scala-logging>
+        <scala-logging.version>3.9.0</scala-logging.version>
         <scalatest.version>3.0.5</scalatest.version>
         <scala.version>${scala.binary.version}.12</scala.version>
         <scalikejdbc.version>2.2.8</scalikejdbc.version>
@@ -68,7 +68,7 @@
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
-                <version>${http.client.version}</version>
+                <version>${http_client.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.stratio.governance</groupId>
@@ -113,7 +113,7 @@
             <dependency>
                 <groupId>com.typesafe.scala-logging</groupId>
                 <artifactId>scala-logging_${scala.binary.version}</artifactId>
-                <version>${scala-logging}</version>
+                <version>${scala-logging.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>

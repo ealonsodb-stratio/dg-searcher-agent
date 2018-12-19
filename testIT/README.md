@@ -9,16 +9,19 @@ In this project, integration between application interfaces and external technol
 
 
 ```
-docker run -dit -e POSTGRES_PASSWORD=pass -e POSTGRES_USER=user -e POSTGRES_DB=governance -p 5432:5432 postgres
+docker run -dit --name postgres1 -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=governance -p 5432:5432 postgres
 ```
 
 
 ## How to run a postgres SQL shell
 
 ```
-DOCKER_ID=$(docker ps | grep postgres | awk '{print $1}')
+docker exec -it postgres1 psql -d governance -U postgres -W
+```
 
-docker exec -it $DOCKER_ID psql -d governance -U user -W
+```
+docker stop postgres1
+docker start postgres1
 ```
 
 ## How to run a Search Engine

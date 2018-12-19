@@ -138,6 +138,7 @@ class DGManager(extractor: ActorRef, managerUtils: ManagerUtils, searcherDao: Se
 }
 
 object IndexationStatus extends Enumeration {
+  type Value
   val SUCCESS, ERROR = Value
 }
 

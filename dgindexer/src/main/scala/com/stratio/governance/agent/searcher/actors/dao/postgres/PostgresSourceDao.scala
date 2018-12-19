@@ -37,6 +37,8 @@ class PostgresSourceDao(sourceConnectionUrl: String,
   ConnectionPool.dataSource().asInstanceOf[PoolingDataSource].getConnection().setAutoCommit(true)
 
 
+  val databaseName = database.toLowerCase
+  val schemaName = schema.toLowerCase
   val initialExponentialBackOff: ExponentialBackOff = exponentialBackOff
   implicit val formats: DefaultFormats.type = DefaultFormats
   implicit val timeout: Timeout = Timeout(60000, MILLISECONDS)
@@ -57,6 +59,7 @@ class PostgresSourceDao(sourceConnectionUrl: String,
 
 
   def restartConnection(): Unit = {
+    System.out.println(s"PostgresSourceDao: restartConnection()")
     connection.commit()
     connection.close()
     connection = ConnectionPool.borrow()
@@ -68,11 +71,14 @@ class PostgresSourceDao(sourceConnectionUrl: String,
       case None =>
         var preparedStatement: PreparedStatement = null
         try {
+          System.out.println(s"PostgresSourceDao: prepareStatement: $query")
           preparedStatement = connection.prepareStatement(query)
           exponentialBackOff = initialExponentialBackOff
         } catch{
           case exception: SQLException =>
             // See https://www.postgresql.org/docs/current/errcodes-appendix.html
+            System.out.println(s"PostgresSourceDao: prepareStatement: exception: [${exception.getMessage}]")
+            System.out.println(s"PostgresSourceDao: prepareStatement: exponentialBackOff waiting ${exponentialBackOff.actualPause} ms")
             Thread.sleep(exponentialBackOff.actualPause)
             if (exception.getSQLState.startsWith("08")) { // Problems with Connection
               restartConnection()
@@ -85,21 +91,45 @@ class PostgresSourceDao(sourceConnectionUrl: String,
       case Some(ps) => ps
     }
 
-  def executeQuery(sql: String): ResultSet = {
+  def executeQuery(query: String): ResultSet = {
     try{
-      val rs = connection.createStatement().executeQuery(sql)
+      System.out.println(s"PostgresSourceDao: executeQuery: $query")
+      val rs = connection.createStatement().executeQuery(query)
+      System.out.println(s"PostgresSourceDao: executeQuery returning: $rs")
       exponentialBackOff = initialExponentialBackOff
       rs
     } catch {
       case exception: SQLException =>
+        System.out.println(s"PostgresSourceDao: executeQuery: exception: [${exception.getMessage}]")
         // See https://www.postgresql.org/docs/current/errcodes-appendix.html
-        LOG.error("executeQuery - Exponential BackOff in progress ... . " + sql + ", " + exception.getMessage)
+        LOG.error("executeQuery - Exponential BackOff in progress ... . " + query + ", " + exception.getMessage)
         Thread.sleep(exponentialBackOff.actualPause)
         if (exception.getSQLState.startsWith("08")) { // Problems with Connection
           restartConnection()
         }
         exponentialBackOff = exponentialBackOff.next
-        executeQuery(sql)
+        executeQuery(query)
+    }
+  }
+
+  def executeUpdate(query: String): Int = {
+    try{
+      System.out.println(s"PostgresSourceDao: executeUpdate: $query")
+      val rs = connection.createStatement().executeUpdate(query)
+      System.out.println(s"PostgresSourceDao: executeUpdate returning: $rs")
+      exponentialBackOff = initialExponentialBackOff
+      rs
+    } catch {
+      case exception: SQLException =>
+        System.out.println(s"PostgresSourceDao: executeUpdate: exception: [${exception.getMessage}]")
+        // See https://www.postgresql.org/docs/current/errcodes-appendix.html
+        System.out.println(s"PostgresSourceDao: executeUpdate: exponentialBackOff waiting ${exponentialBackOff.actualPause} ms")
+        Thread.sleep(exponentialBackOff.actualPause)
+        if (exception.getSQLState.startsWith("08")) { // Problems with Connection
+          restartConnection()
+        }
+        exponentialBackOff = exponentialBackOff.next
+        executeUpdate(query)
     }
   }
 
@@ -139,11 +169,14 @@ class PostgresSourceDao(sourceConnectionUrl: String,
 
   def executeQueryPreparedStatement(sql: PreparedStatement): ResultSet = {
     try{
+      System.out.println(s"PostgresSourceDao: executePreparedStatement: ${sql.toString}")
       val rs = sql.executeQuery()
+      System.out.println(s"PostgresSourceDao: executePreparedStatement returning: $rs")
       exponentialBackOff = initialExponentialBackOff
       rs
     } catch {
       case exception: SQLException =>
+        System.out.println(s"PostgresSourceDao: executePreparedStatement: exception: [${exception.getMessage}]")
         // See https://www.postgresql.org/docs/current/errcodes-appendix.html
         LOG.error("executePreparedStatement - Exponential BackOff in progress ... . " + sql + ", " + exception.getMessage)
         Thread.sleep(exponentialBackOff.actualPause)
@@ -180,18 +213,22 @@ class PostgresSourceDao(sourceConnectionUrl: String,
     // TODO Check this. We do not want to create de schema
     /*
     if (!isDatabaseCreated)
-      if (allowedToCreateContext) createDatabase() else throw new IllegalStateException(s"Database $database is not created")
-
-    useDatabase()
+      if (allowedToCreateContext) {
+        createDatabase()
+      } else throw new IllegalStateException(s"Database $databaseName is not created")
 
     if (!isSchemaCreated)
-      if (allowedToCreateContext) createSchema() else throw new IllegalStateException(s"Schema $schema is not created")
+      if (allowedToCreateContext) {
+        createSchema()
+      } else throw new IllegalStateException(s"Schema $schemaName is not created")
 
     if (!isDataAssetTableCreated)
       if (allowedToCreateContext) createDataAssetTable() else throw new IllegalStateException(s"Table $schema.$dataAssetTable is not created")
     */
 
-    if (!isDataAssetMetadataTableCreated) createDataAssetMetadataTable()
+    if (!isDataAssetMetadataTableCreated) {
+      createDataAssetMetadataTable()
+    }
   }
 
   def close():Unit = {
@@ -199,31 +236,48 @@ class PostgresSourceDao(sourceConnectionUrl: String,
   }
 
   private def isDatabaseCreated: Boolean = {
-    executeQuery(s"SELECT EXISTS(SELECT 1 from pg_database WHERE datname='$database')").getBoolean("exists")
+    val rs= executeQuery(s"SELECT EXISTS(SELECT 1 from pg_database WHERE datname='$databaseName')")
+    if (rs.next()) {
+      val ret = rs.getBoolean("exists")
+      System.out.println(s"PostgresSourceDao: isDatabaseCreated returning: $ret")
+      ret
+    } else {
+      throw new RuntimeException("Cannot connect to database")
+    }
   }
 
   private def createDatabase() : Unit = {
-    executeQuery(s"CREATE DATABASE $database")
-  }
-
-  private def useDatabase(): Unit = {
-    executeQuery(s"\\c $database")
+    executeUpdate(s"CREATE DATABASE $databaseName")
   }
 
   private def isSchemaCreated: Boolean = {
-    executeQuery(s"SELECT EXISTS(SELECT 1 FROM information_schema.schemata WHERE schema_name = '$schema')").getBoolean("exists")
+    val rs = executeQuery(s"SELECT EXISTS(SELECT 1 FROM information_schema.schemata WHERE schema_name = '$schemaName')")
+    if (rs.next()) {
+      val ret = rs.getBoolean("exists")
+      System.out.println(s"PostgresSourceDao: isSchemaCreated returning: $ret")
+      ret
+    } else{
+      throw new RuntimeException("Cannot connect to database")
+    }
   }
 
   private def createSchema(): Unit = {
-    executeQuery(s"CREATE SCHEMA $schema")
+    executeUpdate(s"CREATE SCHEMA $schemaName")
   }
 
   private def isDataAssetTableCreated: Boolean = {
-    executeQuery(s"SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_schema = '$schema' AND table_name = '$dataAssetTable')").getBoolean("exists")
+    val rs = executeQuery(s"SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_schema = '$schemaName' AND table_name = '$dataAssetTable')")
+    if (rs.next()) {
+      val ret = rs.getBoolean("exists")
+      System.out.println(s"PostgresSourceDao: isDataAssetTableCreated returning: $ret")
+      ret
+    } else{
+      throw new RuntimeException("Cannot connect to database")
+    }
   }
 
   private def createDataAssetTable() : Unit = {
-    executeQuery(s"CREATE TABLE IF NOT EXISTS $schema.$dataAssetTable(id SERIAL, name TEXT,description TEXT," +
+    executeUpdate(s"CREATE TABLE IF NOT EXISTS $schemaName.$dataAssetTable(id SERIAL, name TEXT,description TEXT," +
       s"metadata_path TEXT NOT NULL UNIQUE,type TEXT NOT NULL,subtype TEXT NOT NULL,tenant TEXT NOT NULL," +
       s"properties jsonb NOT NULL,active BOOLEAN NOT NULL,discovered_at TIMESTAMP NOT NULL," +
       s"modified_at TIMESTAMP NOT NULL,CONSTRAINT pk_data_asset PRIMARY KEY (id)," +
@@ -344,19 +398,17 @@ class PostgresSourceDao(sourceConnectionUrl: String,
 
   def readUpdatedDataAssetsIdsSince(state: PostgresPartialIndexationReadState): (List[Int], PostgresPartialIndexationReadState) = {
     val unionSelectUpdatedStatement: PreparedStatement =
-        prepareStatement(s"(" +
-                                 s" SELECT id,modified_at,1 FROM $schema.$dataAssetTable WHERE modified_at > ? " +
+        prepareStatement(s"SELECT id,modified_at,1 FROM $schemaName.$dataAssetTable WHERE modified_at >= '?' ORDER BY modified_at DESC" +
                                    "UNION " +
-                                 s"SELECT data_asset_id,modified_at,2 FROM $schema.$keyDataAssetTable WHERE modified_at > ? " +
+                                 s"SELECT data_asset_id,modified_at,2 FROM $schemaName.$keyDataAssetTable WHERE modified_at >= '?' ORDER BY modified_at DESC" +
                                    "UNION " +
-                                 s"SELECT key_data_asset.data_asset_id, key.modified_at,3 FROM $schema.$keyDataAssetTable AS key_data_asset, " +
-                                    s"$schema.$keyTable AS key WHERE key.modified_at > ? " +
+                                 s"SELECT key_data_asset.data_asset_id, key.modified_at,3 FROM $schemaName.$keyDataAssetTable AS key_data_asset, " +
+                                    s"$schemaName.$keyTable AS key WHERE key.modified_at >= '?' ORDER BY key.modified_at DESC" +
                                    "UNION " +
-                                 s"SELECT data_asset_id,modified_at,4 FROM $schema.$businessAssetsDataAssetsTable WHERE modified_at > ? " +
+                                 s"SELECT data_asset_id,modified_at,4 FROM $schemaName.$businessAssetsDataAssetsTable WHERE modified_at >= '?' ORDER BY modified_at DESC" +
                                    "UNION " +
-                                 s"SELECT bus_assets_data_assets.data_asset_id, bus_assets.modified_at,5 FROM $schema.$businessAssetsDataAssetsTable AS bus_assets_data_assets, " +
-                                    s"$schema.$businessAssetsTable AS bus_assets WHERE bus_assets.modified_at > ? " +
-                                s") ORDER BY modified_at DESC;")
+                                 s"SELECT bus_assets_data_assets.data_asset_id, bus_assets.modified_at,5 FROM $schemaName.$businessAssetsDataAssetsTable AS bus_assets_data_assets, " +
+                                    s"$schemaName.$businessAssetsTable AS bus_assets WHERE bus_assets.modified_at >= '?' ORDER BY bus_assets.modified_at DESC;")
     unionSelectUpdatedStatement.setTimestamp(1,state.readDataAsset)
     unionSelectUpdatedStatement.setTimestamp(2,state.readKeyDataAsset)
     unionSelectUpdatedStatement.setTimestamp(3,state.readKey)
