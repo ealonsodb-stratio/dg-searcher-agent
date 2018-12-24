@@ -1,6 +1,5 @@
 package com.stratio.governance.agent.search.testit.utils.postgres
 
-import com.stratio.governance.agent.search.testit.utils.postgres
 import com.stratio.governance.agent.search.testit.utils.postgres.PostgresSpace.Database.Schema
 import com.stratio.governance.agent.search.testit.utils.postgres.PostgresSpace.Database.Schema.Table
 import com.stratio.governance.agent.search.testit.utils.postgres.PostgresSpace.Database.Schema.Table.Constraint.AdditionalOption.`ON DELETE CASCADE`
@@ -107,10 +106,10 @@ object PostgresSpace {
             }
           }
 
-          sealed class Type(token: Type.Token.Value) {
+          sealed class Type(token: Type.Token.Value, additionalOptions: List[AdditionalOption]) {
           }
 
-          case class UniqueType(columns: Set[String]) extends Type(Token.UNIQUE) {
+          case class UniqueType(columns: Set[String]) extends Type(Token.UNIQUE, List()) {
             override def toString: String = {Token.UNIQUE.toString + s"(${columns.mkString(", ")})"}
           }
 
@@ -118,8 +117,10 @@ object PostgresSpace {
             def builder(columns : Set[String]): UniqueTypeBuilder = UniqueTypeBuilder(columns)
           }
 
-          case class ForeignKeyType(schema: String, table: String, column: String, columns : Set[String]) extends Type(Token.`FOREIGN KEY`) {
-            override def toString: String = {Token.`FOREIGN KEY`.toString + s"(${columns.mkString(", ")}) "} + s"REFERENCES $schema.$table($column)"
+          case class ForeignKeyType(schema: String, table: String, column: String, columns : Set[String], additionalOpts: List[AdditionalOption]) extends Type(Token.`FOREIGN KEY`, additionalOpts) {
+            override def toString: String = {
+              s"${Token.`FOREIGN KEY`.toString} (${columns.mkString(", ")}) REFERENCES $schema.$table($column)" + this.additionalOpts.mkString(" ")
+            }
           }
 
           object ForeignKeyType {
@@ -127,11 +128,11 @@ object PostgresSpace {
           }
 
           object AdditionalOption extends Enumeration {
-            val `ON DELETE CASCADE`: postgres.PostgresSpace.Database.Schema.Table.Constraint.AdditionalOption.Value = Value("ON DELETE CASCADE")
+            val `ON DELETE CASCADE`: PostgresSpace.Database.Schema.Table.Constraint.AdditionalOption.Value = Value("ON DELETE CASCADE")
           }
 
           sealed abstract class AdditionalOption(option: AdditionalOption.Value) {
-            def toString: String
+            override def toString: String = option.toString
           }
 
           case class OnDeleteCascadeAdditionalOption() extends AdditionalOption(`ON DELETE CASCADE`)
@@ -148,10 +149,10 @@ object PostgresSpace {
 
           sealed abstract class TypeBuilder[T <: Type](token: Token.Value) extends AbstractBuilder[T] {
 
-            val options: ListBuffer[AdditionalOption] = ListBuffer()
+            val additionalOptions: ListBuffer[AdditionalOption] = ListBuffer()
 
-            def withAdditionalOption(option: AdditionalOption): TypeBuilder[T] = {
-              options += option
+            def withAdditionalOption(additionalOption: AdditionalOption): TypeBuilder[T] = {
+              additionalOptions += additionalOption
               this
             }
 
@@ -161,7 +162,7 @@ object PostgresSpace {
           }
 
           case class ForeignKeyTypeBuilder(schema: String,table: String, column: String, columns : Set[String]) extends TypeBuilder[ForeignKeyType](Token.`FOREIGN KEY`) {
-            override def build: ForeignKeyType = ForeignKeyType(schema, table, column, columns)
+            override def build: ForeignKeyType = ForeignKeyType(schema, table, column, columns, additionalOptions.toList)
           }
 
           case class UniqueTypeBuilder(columns : Set[String]) extends TypeBuilder[UniqueType](Token.UNIQUE) {
@@ -231,7 +232,8 @@ object PostgresSpace {
         }
 
         case class Column(name: String, `type`: Column.Type.Value, constraints: List[Column.Constraint.Value]) {
-          def generateCreateTableLine: String = name.concat(" ").concat(`type`.toString)
+          def generateCreateTableLine: String = s"$name ${`type`} ${constraints.mkString(" ")}"
+
         }
 
         object Column {
@@ -243,7 +245,9 @@ object PostgresSpace {
 
           object Constraint extends Enumeration {
             type Value
-            val `NOT NULL`, UNIQUE, `PRIMARY KEY` = Value
+            val `NOT NULL` = Value("NOT NULL")
+            val UNIQUE = Value("NOT NULL")
+            val `PRIMARY KEY` = Value("PRIMARY KEY")
           }
 
           def builder(name: String, `type`: Column.Type.Value): ColumnBuilder = ColumnBuilder(name, `type`)
