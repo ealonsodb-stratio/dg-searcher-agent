@@ -11,7 +11,7 @@ import akka.util.Timeout
 import com.stratio.governance.agent.searcher.actors.extractor.dao.{SourceDao => ExtractorSourceDao}
 import com.stratio.governance.agent.searcher.actors.indexer.dao.{SourceDao => IndexerSourceDao}
 import com.stratio.governance.agent.searcher.actors.manager.dao.{SourceDao => ManagerSourceDao}
-import com.stratio.governance.agent.searcher.model.es.DataAssetES
+import com.stratio.governance.agent.searcher.model.es.ElasticObject
 import com.stratio.governance.agent.searcher.model.utils.ExponentialBackOff
 import com.stratio.governance.agent.searcher.model.{BusinessAsset, KeyValuePair}
 import org.json4s.DefaultFormats
@@ -322,16 +322,16 @@ class PostgresSourceDao(sourceConnectionUrl: String,
     }
   }
 
-  def readDataAssetsSince(offset: Int, limit: Int): (Array[DataAssetES], Int) = {
-    val selectFromDataAssetWithWhereStatement: PreparedStatement = prepareStatement(s"((SELECT id,name,alias,description,metadata_path,type,subtype,tenant,properties,active,discovered_at,modified_at FROM $schema.$dataAssetTable WHERE active = ?) union " + additionalBusiness.getBTTotalIndexationsubquery(schema, businessAssetsTable, businessAssetsTypeTable) + ") order by id asc, name asc limit ? offset ?")
+  def readDataAssetsSince(offset: Int, limit: Int): (Array[ElasticObject], Int) = {
+    val selectFromDataAssetWithWhereStatement: PreparedStatement = prepareStatement(s"((SELECT id,name,alias,description,metadata_path,type,subtype,tenant,properties,active,discovered_at,modified_at FROM $schema.$dataAssetTable WHERE active = ?) union " + additionalBusiness.getAdditionalBusinessTotalIndexationSubquery(schema, businessAssetsTable, businessAssetsTypeTable, qualityRulesTable) + ") order by id asc, name asc limit ? offset ?")
     selectFromDataAssetWithWhereStatement.setBoolean(1, true)
     selectFromDataAssetWithWhereStatement.setInt(2, limit)
     selectFromDataAssetWithWhereStatement.setInt(3, offset)
-    val list = DataAssetES.getValuesFromResult(additionalBusiness.adaptInfo, executeQueryPreparedStatement(selectFromDataAssetWithWhereStatement))
+    val list = ElasticObject.getValuesFromResult(additionalBusiness.adaptInfo, executeQueryPreparedStatement(selectFromDataAssetWithWhereStatement))
     (list.toArray, offset + limit)
   }
 
-  def readDataAssetsWhereMdpsIn(mdps: List[String]): Array[DataAssetES] = {
+  def readDataAssetsWhereMdpsIn(mdps: List[String]): Array[ElasticObject] = {
     if (mdps.isEmpty) Array() else {
       // TODO This query has a problem with java-scala array conversion
 //      val selectFromDataAssetWithIdsInStatement: PreparedStatement = prepareStatement(s"SELECT id,name,description,metadata_path,type,subtype,tenant,properties,active,discovered_at,modified_at FROM $schema.$dataAssetTable WHERE id IN(?)")
@@ -349,30 +349,48 @@ class PostgresSourceDao(sourceConnectionUrl: String,
         selectFromDataAssetWithIdsInStatement.setString(index, mdp)
       })
 
-      DataAssetES.getValuesFromResult(additionalBusiness.adaptInfo, executeQueryPreparedStatement(selectFromDataAssetWithIdsInStatement)).toArray
+      ElasticObject.getValuesFromResult(additionalBusiness.adaptInfo, executeQueryPreparedStatement(selectFromDataAssetWithIdsInStatement)).toArray
     }
   }
 
-  def readBusinessTermsWhereIdsIn(ids: List[Int]): Array[DataAssetES] = {
+  def readBusinessTermsWhereIdsIn(ids: List[Int]): Array[ElasticObject] = {
     if (ids.isEmpty) Array() else {
       // Alternative Option without list object
       val repl:  String = ids.map( id => "?") match {
         case q: List[String] => q.mkString(",")
       }
-      val selectFromBusinessTermWithIdsInStatement: PreparedStatement = prepareStatement(additionalBusiness.getBTPartialIndexationSubquery2(schema, businessAssetsTable, businessAssetsTypeTable).replace("{{ids}}",repl))
+      val selectFromBusinessTermWithIdsInStatement: PreparedStatement = prepareStatement(additionalBusiness.getBusinessTermsPartialIndexationSubquery2(schema, businessAssetsTable, businessAssetsTypeTable).replace("{{ids}}",repl))
       var index: Int = 0
       ids.foreach(id => {
         index+=1
         selectFromBusinessTermWithIdsInStatement.setInt(index, id)
       })
 
-      DataAssetES.getValuesFromResult(additionalBusiness.adaptInfo, executeQueryPreparedStatement(selectFromBusinessTermWithIdsInStatement)).toArray
+      ElasticObject.getValuesFromResult(additionalBusiness.adaptInfo, executeQueryPreparedStatement(selectFromBusinessTermWithIdsInStatement)).toArray
     }
+  }
+
+  override def readQualityRulesWhereIdsIn(ids: List[Int]): Array[ElasticObject] = {
+    if (ids.isEmpty) Array() else {
+      // Alternative Option without list object
+      val repl:  String = ids.map( id => "?") match {
+        case q: List[String] => q.mkString(",")
+      }
+      val selectFromBusinessTermWithIdsInStatement: PreparedStatement = prepareStatement(additionalBusiness.getQualityRulesPartialIndexationSubquery2(schema, qualityRulesTable).replace("{{ids}}",repl))
+      var index: Int = 0
+      ids.foreach(id => {
+        index+=1
+        selectFromBusinessTermWithIdsInStatement.setInt(index, id)
+      })
+
+      ElasticObject.getValuesFromResult(additionalBusiness.adaptInfo, executeQueryPreparedStatement(selectFromBusinessTermWithIdsInStatement)).toArray
+    }
+
   }
 
   private case class Result (metadataPath: String, baId: Int, timestamp: Timestamp, literal: Short)
 
-  def readUpdatedDataAssetsIdsSince(state: PostgresPartialIndexationReadState): (List[String], List[Int], PostgresPartialIndexationReadState) = {
+  def readUpdatedDataAssetsIdsSince(state: PostgresPartialIndexationReadState): (List[String], List[Int],List[Int], PostgresPartialIndexationReadState) = {
     val unionSelectUpdatedStatement: PreparedStatement =
         prepareStatement(s"(" +
                                  s" SELECT metadata_path, 0, modified_at,1 FROM $schema.$dataAssetTable WHERE modified_at > ? " +
@@ -389,7 +407,7 @@ class PostgresSourceDao(sourceConnectionUrl: String,
                                    "UNION " +
                                  s"SELECT metadata_path, 0, modified_at,6 FROM $schema.$qualityRulesTable WHERE modified_at > ? " +
                                    "UNION " +
-                                 additionalBusiness.getBTPartialIndexationSubquery1(schema, businessAssetsTable, businessAssetsTypeTable) +
+                                 additionalBusiness.getAdditionalBusinessPartialIndexationSubquery1(schema, businessAssetsTable, businessAssetsTypeTable, qualityRulesTable, 7) +
                                 s")")
     unionSelectUpdatedStatement.setTimestamp(1,state.readDataAsset)
     unionSelectUpdatedStatement.setTimestamp(2,state.readKeyDataAsset)
@@ -399,8 +417,9 @@ class PostgresSourceDao(sourceConnectionUrl: String,
     unionSelectUpdatedStatement.setTimestamp(6,state.readQualityRules)
 
     // Additional queries conditions for business Terms
-    unionSelectUpdatedStatement.setInt(7, 7)
-    unionSelectUpdatedStatement.setTimestamp(8,state.readBusinessAssets)
+    unionSelectUpdatedStatement.setTimestamp(7,state.readBusinessAssets)
+    unionSelectUpdatedStatement.setTimestamp(8,state.readQualityRules)
+
 
     val resultSet: ResultSet = executeQueryPreparedStatement(unionSelectUpdatedStatement)
     var list : List[Result] = List()
@@ -409,6 +428,7 @@ class PostgresSourceDao(sourceConnectionUrl: String,
     }
     val mdps = list.filter(_.literal < 7).map(_.metadataPath).distinct
     val idsBusinessTerms = list.filter(_.literal == 7).map(_.baId)
+    val idsQualityRules = list.filter(_.literal == 8).map(_.baId)
 
     list.filter(_.literal == 1).map(_.timestamp).sortWith(_.getTime > _.getTime).headOption match {
       case Some(t) => state.readDataAsset = t
@@ -438,7 +458,11 @@ class PostgresSourceDao(sourceConnectionUrl: String,
       case Some(t) => state.readBusinessAssets = t
       case None =>
     }
-    (mdps, idsBusinessTerms, state)
+    list.filter(_.literal == 8).map(_.timestamp).sortWith(_.getTime > _.getTime).headOption match {
+      case Some(t) => state.readQualityRules = t
+      case None =>
+    }
+    (mdps, idsBusinessTerms, idsQualityRules, state)
   }
 
   override def getKeys(): List[String] = {
@@ -483,6 +507,8 @@ class PostgresSourceDao(sourceConnectionUrl: String,
       List[QualityRule]()
     }
   }
+
+
 }
 object PostgresSourceDao {
 

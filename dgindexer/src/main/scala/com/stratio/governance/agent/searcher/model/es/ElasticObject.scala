@@ -8,17 +8,17 @@ import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
 import org.slf4j.{Logger, LoggerFactory}
 
-case class DataAssetES(id: String,
-                       name: Option[String],
-                       alias: Option[String],
-                       description: Option[String],
-                       metadataPath: String,
-                       tpe: String,
-                       subtype: String,
-                       tenant: String,
-                       active: Boolean,
-                       discoveredAt: Timestamp,
-                       var modifiedAt: Timestamp) extends EntityRowES {
+case class ElasticObject(id: String,
+                         name: Option[String],
+                         alias: Option[String],
+                         description: Option[String],
+                         metadataPath: String,
+                         tpe: String,
+                         subtype: String,
+                         tenant: String,
+                         active: Boolean,
+                         discoveredAt: Timestamp,
+                         var modifiedAt: Timestamp) {
 
   private lazy val LOG: Logger = LoggerFactory.getLogger(getClass.getName)
 
@@ -88,10 +88,10 @@ case class DataAssetES(id: String,
 
 }
 
-object DataAssetES {
+object ElasticObject {
 
   @scala.annotation.tailrec
-  def getValuesFromResult(f: (Int, String, String, String, JValue) => (String, String, String, String), resultSet: ResultSet, list: List[DataAssetES] = Nil): List[DataAssetES] = {
+  def getValuesFromResult(f: (Int, String, String, String, JValue) => (String, String, String, String), resultSet: ResultSet, list: List[ElasticObject] = Nil): List[ElasticObject] = {
     if (resultSet.next()) {
       val id = resultSet.getInt(1)
       val metadataPath = resultSet.getString(5)
@@ -99,7 +99,7 @@ object DataAssetES {
       val subType = resultSet.getString(7)
       val jValue = parseProperties(resultSet.getString(9))
       val calculated_values: (String, String, String, String) = f(id, typ, subType, metadataPath, jValue)
-      val daEs = DataAssetES( calculated_values._1,
+      val daEs = ElasticObject( calculated_values._1,
         Some(resultSet.getString(2)),
         Some(resultSet.getString(3)),
         Some(resultSet.getString(4)),
