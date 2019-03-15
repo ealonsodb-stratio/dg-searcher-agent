@@ -70,6 +70,8 @@ class CustomSourceDao(chunk: Array[DataAssetES]) extends ExtractorSourceDao with
   override def executeQueryPreparedStatement(sql: PreparedStatement): ResultSet = ???
 
   override def readBusinessTermsWhereIdsIn(ids: List[Int]): Array[DataAssetES] = ???
+
+  override def qualityRules(mdps: List[String]): List[EntityRow] = ???
 }
 
 

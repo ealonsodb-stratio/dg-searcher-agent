@@ -48,6 +48,8 @@ class CustomSourceDao extends ExtractorSourceDao with IndexerSourceDao {
   override def executeQueryPreparedStatement(sql: PreparedStatement): ResultSet = ???
 
   override def readBusinessTermsWhereIdsIn(ids: List[Int]): Array[DataAssetES] = ???
+
+  override def qualityRules(mdps: List[String]): List[EntityRow] = ???
 }
 
 class CommonParams(s: Semaphore, sourceDao: CustomSourceDao, reference: String) extends DGExtractorParams(sourceDao, 10,10, ExponentialBackOff(10, 10),10, "test") with IndexerParams {

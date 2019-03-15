@@ -31,7 +31,7 @@ class DGIndexer(params: IndexerParams) extends Actor {
 
             val ids: Map[String, Long] = x.filter( dadao => !params.getAdditionalBusiness.isAdaptable(dadao.tpe)).map((dadao: DataAssetES) => (dadao.metadataPath, dataAssetIdtoLong(dadao.id))).toMap
 
-            val functionList: List[List[String] => List[EntityRow]] = List(params.getSourceDao.keyValuePairProcess, params.getSourceDao.businessAssets)
+            val functionList: List[List[String] => List[EntityRow]] = List(params.getSourceDao.keyValuePairProcess, params.getSourceDao.businessAssets, params.getSourceDao.qualityRules)
 
             val relatedInfo: List[List[EntityRow]] = functionList.par.map(f => {
               val erES = f(ids.keySet.toList)
@@ -59,6 +59,12 @@ class DGIndexer(params: IndexerParams) extends Actor {
                 case KeyValuePair(_, key, value, updated_at) =>
                   x.addKeyValue(key, value)
                   val upatedTs: Long = TimestampUtils.toLong(updated_at)
+                  if (upatedTs > maxTime) {
+                    maxTime = upatedTs
+                  }
+                case QualityRule(_, name, modifiedAt) =>
+                  x.addQualityRule(name)
+                  val upatedTs: Long = TimestampUtils.toLong(modifiedAt)
                   if (upatedTs > maxTime) {
                     maxTime = upatedTs
                   }

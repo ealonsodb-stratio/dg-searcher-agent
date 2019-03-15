@@ -8,7 +8,7 @@ import com.stratio.governance.agent.searcher.model.utils.ExponentialBackOff
 import com.stratio.governance.agent.search.testit.utils.{PostgresSourceDaoTest, SystemPropertyConfigurator}
 import com.stratio.governance.agent.searcher.actors.dao.postgres.PostgresPartialIndexationReadState
 import com.stratio.governance.agent.searcher.model.es.DataAssetES
-import com.stratio.governance.agent.searcher.model.{BusinessAsset, KeyValuePair}
+import com.stratio.governance.agent.searcher.model.{BusinessAsset, KeyValuePair, QualityRule}
 import com.typesafe.scalalogging.LazyLogging
 import org.junit.{FixMethodOrder, Test}
 import org.junit.Assert._
@@ -80,6 +80,17 @@ class PostgresSourceDaoIT extends LazyLogging {
     val list: List[BusinessAsset] = postgresDao.businessAssets(List[String]("hdfsFinance://department/marketing/2018>/:region.parquet:R_REGIONKEY:", "hdfsFinance://department/marketing/2017>/:region.parquet:R_REGIONKEY:", "hdfsFinance://department/finance/2018>/:region.parquet:R_COMMENT:"))
 
     assertEquals(5, list.size)
+    assertEquals(3, list.map(_.metadataPath).distinct.size)
+
+  }
+
+  //"PostgresDao businessAssets method " should " retrieve all information related" in {
+  @Test
+  def test02qualityRulesMethod: Unit = {
+
+    val list: List[QualityRule] = postgresDao.qualityRules(List[String]("hdfsFinance://department/marketing/2018>/:region.parquet:R_REGIONKEY:", "hdfsFinance://department/marketing/2017>/:region.parquet:R_REGIONKEY:", "hdfsFinance://department/finance/2018>/:region.parquet:R_COMMENT:"))
+
+    assertEquals(4, list.size)
     assertEquals(3, list.map(_.metadataPath).distinct.size)
 
   }

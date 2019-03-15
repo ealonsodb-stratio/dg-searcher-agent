@@ -26,6 +26,8 @@ case class DataAssetES(id: String,
 
   var businessTerms: Option[List[String]] = None
 
+  var qualityRules: Option[List[String]] = None
+
   var keyValues: Option[List[(String, String)]] = None
 
   var dataStore: String = ""
@@ -54,6 +56,12 @@ case class DataAssetES(id: String,
     keyValues = Some((k,v) :: keyValues.get)
   }
 
+  def addQualityRule(qr: String): Unit = {
+    if (qualityRules.isEmpty)
+      qualityRules = Some(List())
+    qualityRules = Some(qr :: qualityRules.get)
+  }
+
   def getJsonObject: JValue = {
     jsonObject = jsonObject ~ ("id" -> JString(id))
     if (name.isDefined && (name.get != null)) jsonObject = jsonObject ~ ("name" -> JString(name.get))
@@ -68,6 +76,7 @@ case class DataAssetES(id: String,
     jsonObject = jsonObject ~ ("modifiedAt" -> JString(getModifiedAtAsString))
     jsonObject = jsonObject ~ ("dataStore" -> JString(dataStore))
     if (businessTerms.isDefined) jsonObject = jsonObject ~ ("businessTerms" -> JArray(businessTerms.get.map(a=>JString(a))))
+    if (qualityRules.isDefined) jsonObject = jsonObject ~ ("qualityRules" -> JArray(qualityRules.get.map(a=>JString(a))))
     if (keyValues.isDefined) {
       jsonObject = jsonObject ~ ("keys" -> JArray(keyValues.get.map(a=>JString(a._1))))
       keyValues.get.foreach( a => {
